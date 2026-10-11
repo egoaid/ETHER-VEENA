@@ -1,0 +1,13 @@
+ETHER VEENA
+Copyright (c) 2026 egoaid. All rights reserved.
+
+This software and its source code are provided to be used through the web page where it is published. No licence is granted to copy, modify,
+redistribute or sell the code, the icons or the images, except where the law allows it, without written permission from the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+Third-party components (loaded at run time from public CDNs, not part of this repository; each keeps its own licence):
+  - MediaPipe Tasks Vision (hand, face and pose landmarkers) - Apache License 2.0 - Google
+  - Fraunces, IBM Plex Sans, IBM Plex Mono (Google Fonts) - SIL Open Font License 1.1

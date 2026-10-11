@@ -1,0 +1,256 @@
+/* ==========================================================================
+   theremin.css — the two small control-zone boxes (v0.2)
+   Each zone is centered on a calibrated hand position and shows how much
+   of the frame is actually "live" — the point of v0.2 is that this is a
+   small area, not the whole screen.
+   ETHER VEENA — © 2026 egoaid
+   ========================================================================== */
+
+.control-zone {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  border: 1.5px dashed rgba(239, 231, 216, 0.35);
+  background: rgba(10, 9, 8, 0.18);
+  z-index: 1;
+  transition: left 0.2s ease, top 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.zone-pitch {
+  height: 15%;
+  border-color: rgba(87, 240, 172, 0.4);
+}
+
+.zone-volume {
+  width: 13%;
+  border-color: rgba(231, 165, 61, 0.4);
+}
+
+/* -- Calibrated-center dot, fixed at the middle of each zone --------------- */
+
+.zone-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 999px;
+}
+
+.zone-pitch .zone-center { background: var(--signal-dim); box-shadow: 0 0 6px var(--signal-dim); }
+.zone-volume .zone-center { background: var(--tube-dim); box-shadow: 0 0 6px var(--tube-dim); }
+
+/* -- Live hand-position cursor within its zone ------------------------------ */
+
+.zone-cursor {
+  position: absolute;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.zone-cursor.is-visible {
+  opacity: 1;
+}
+
+/* Pitch: a vertical line, like the indicator of the pitch grid (Build 028) — with faint grid ticks behind it */
+.zone-pitch {
+  background-image: repeating-linear-gradient(90deg, rgba(87, 240, 172, 0.16) 0 1px, transparent 1px 12.5%);
+}
+.zone-pitch .zone-cursor {
+  top: -6px;
+  bottom: -6px;
+  width: 4px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--signal);
+  box-shadow: 0 0 calc(8px + var(--fine-mag, 0) * 16px) var(--signal);
+  transition: box-shadow 0.1s linear, opacity 0.15s ease;
+}
+
+/* Volume: a HORIZONTAL line, the twin of the pitch line. It sits at the volume (top = loud, bottom = quiet; hand up = louder = the line rises) */
+.zone-volume {
+  background-image: repeating-linear-gradient(0deg, rgba(231, 165, 61, 0.16) 0 1px, transparent 1px 12.5%);
+}
+.zone-volume .zone-cursor {
+  left: -6px;
+  right: -6px;
+  width: auto;
+  height: 4px;
+  margin: -2px 0 0 0;
+  transform: none;
+  border-radius: 2px;
+  background: var(--tube);
+  box-shadow: 0 0 8px var(--tube);
+}
+
+/* -- Note-name readout + pitch/scale grid (v0.4) ----------------------------- */
+
+.note-panel {
+  background: var(--panel-walnut);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-inset), 0 0 0 1px var(--panel-line);
+  padding: 10px 12px;
+}
+
+.note-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.note-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--signal);
+  min-width: 2.5em;
+}
+
+.note-mode-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--paper-faint);
+}
+
+.pitch-grid {
+  position: relative;
+  height: 34px;
+  border-radius: 6px;
+  background: rgba(10, 9, 8, 0.4);
+  overflow: hidden;
+}
+
+.pitch-grid-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--panel-line);
+}
+
+.pitch-grid-tick.is-root {
+  background: var(--tube-dim);
+  width: 2px;
+}
+
+.pitch-grid-label {
+  position: absolute;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--paper-faint);
+  white-space: nowrap;
+}
+
+.pitch-grid-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: var(--signal);
+  box-shadow: 0 0 8px var(--signal);
+  transition: left 0.06s linear, opacity 0.15s ease;
+  opacity: 0;
+}
+
+.pitch-grid-indicator.is-visible {
+  opacity: 1;
+}
+
+.pitch-grid-indicator.is-muted {
+  background: var(--paper-faint);
+  box-shadow: none;
+}
+
+/* -- Body-control overlay cards (v0.5) -----------------------------------------
+   Hand cards follow the live palm position so the numbers sit beside the
+   hand producing them. Right card opens to the right of the hand, left card
+   to the left, so the two never cover each other's hand. */
+
+.trigger-card {
+  position: absolute;
+  min-width: 108px;
+  max-width: 46%;
+  padding: 5px 7px;
+  border-radius: 8px;
+  /* Build 027: text only — no plate, no border; a soft halo keeps it readable */
+  text-shadow: 0 0 4px rgba(10, 9, 8, 0.9), 0 1px 2px rgba(10, 9, 8, 0.9);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  line-height: 1.35;
+  color: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.15s ease;
+}
+
+.trigger-card.is-visible { opacity: 1; }
+
+.trigger-card-right { transform: translate(14px, -50%); }
+.trigger-card-left { transform: translate(calc(-100% - 14px), -50%); }
+.trigger-card-face {
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  min-width: 130px;
+}
+
+.trigger-card-title {
+  margin-bottom: 2px;
+  font-family: var(--font-ui);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--paper-dim);
+}
+
+.trigger-line { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
+.trigger-line.dim { color: var(--paper-faint); }
+.trigger-name { flex: 1 1 auto; color: var(--paper-dim); }
+.trigger-value { font-variant-numeric: tabular-nums; }
+.trigger-dest { flex: 1 0 100%; color: var(--signal); font-size: 0.52rem; padding-left: 6px; }
+
+.stage.hide-body .trigger-card { display: none; }
+
+/* -- Pitch / note chip and oscilloscope --------------------------------------- */
+
+.pitch-note-chip {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(10, 9, 8, 0.62);
+  backdrop-filter: blur(3px);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--signal);
+  z-index: 3;
+}
+
+.stage.show-pitchnote .pitch-note-chip { display: block; }
+
+.oscilloscope {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 26%;
+  display: none;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(0deg, rgba(10, 9, 8, 0.5), transparent);
+}
+
+.stage.show-scope .oscilloscope { display: block; }

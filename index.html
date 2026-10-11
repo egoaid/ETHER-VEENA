@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>ETHER VEENA — Touchless Rudra Veena, Harp &amp; Theremin</title>
+<meta name="description" content="Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install." />
+<meta name="theme-color" content="#15120f" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="author" content="egoaid" />
+<link rel="canonical" href="https://egoaid.github.io/ether-veena/" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="ETHER VEENA" />
+<meta property="og:title" content="ETHER VEENA — Touchless Rudra Veena, Harp &amp; Theremin" />
+<meta property="og:description" content="Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install." />
+<meta property="og:url" content="https://egoaid.github.io/ether-veena/" />
+<meta property="og:image" content="https://egoaid.github.io/ether-veena/icons/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="ETHER VEENA: a pitch antenna with radio waves and a volume loop, next to the name and 'A touchless spatial instrument'" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="ETHER VEENA — Touchless Rudra Veena, Harp &amp; Theremin" />
+<meta name="twitter:description" content="Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install." />
+<meta name="twitter:image" content="https://egoaid.github.io/ether-veena/icons/og-image.png" />
+
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="ETHER VEENA" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebApplication",
+   "@id": "https://egoaid.github.io/ether-veena/#app",
+   "name": "ETHER VEENA",
+   "alternateName": "Ether Veena touchless spatial instrument",
+   "url": "https://egoaid.github.io/ether-veena/",
+   "description": "Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install.",
+   "applicationCategory": "MultimediaApplication",
+   "applicationSubCategory": "Musical instrument",
+   "operatingSystem": "Any (modern web browser)",
+   "browserRequirements": "Requires JavaScript, a camera (WebRTC) and Web Audio.",
+   "softwareVersion": "0.7.0",
+   "inLanguage": "en",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   "image": "https://egoaid.github.io/ether-veena/icons/og-image.png",
+   "screenshot": "https://egoaid.github.io/ether-veena/icons/og-image.png",
+   "featureList": [
+    "Play a Rudra Veena, harp or theremin with hand tracking",
+    "Pitch and volume from hand position, no touching",
+    "Presets, Randomize and your own saved presets",
+    "Polygon camera filter that keeps your face unrecognisable",
+    "Vector Camera: export SVG, PDF or PNG",
+    "Works on desktop and smartphone, installable as a PWA",
+    "Video is processed on your device and never uploaded"
+   ],
+   "author": {
+    "@type": "Organization",
+    "name": "egoaid"
+   },
+   "copyrightHolder": {
+    "@type": "Organization",
+    "name": "egoaid"
+   },
+   "copyrightYear": 2026
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://egoaid.github.io/ether-veena/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is ETHER VEENA?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "ETHER VEENA is a touchless spatial instrument that runs in a web browser. Your camera tracks your hands, and where they are in the air decides what you hear. You can play a Rudra Veena, a harp or a theremin."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How do I play it?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Press Start and allow the camera. Hold both hands up in a comfortable position and press Calibrate. On the theremin, move your right hand left and right for pitch and your left hand up and down for volume. On the Rudra Veena the left hand slides along the neck and the right hand plucks. On the harp you sweep an open hand across the strings."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is my camera video recorded or uploaded?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. The hand and face tracking runs on your own device. Video is not recorded, saved or sent anywhere. The tracking models are downloaded from a public CDN when you first start the camera."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Which devices and browsers work?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Any recent desktop or phone browser with a camera and Web Audio, such as Chrome, Edge or Safari. On a phone the app keeps the screen awake while you play, and it can be installed to the home screen."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is it free, and do I need to install anything?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "It is free to use in the browser, with no account and no download. You can optionally install it as an app from your browser menu."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "What else can it do?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "It has ready-made presets for each instrument including Rudra Veena ragas by time of day, a Randomize function, a Polygon camera filter that hides your face, a Vector Camera that saves the polygon picture as SVG, PDF or PNG, and saved presets of your own."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+
+<link rel="stylesheet" href="./css/base.css" />
+<link rel="stylesheet" href="./css/camera.css" />
+<link rel="stylesheet" href="./css/controls.css" />
+<link rel="stylesheet" href="./css/theremin.css" />
+<link rel="stylesheet" href="./css/hud.css" />
+</head>
+<body>
+<noscript><p style="padding:24px;font-family:sans-serif;color:#efe7d8">ETHER VEENA is a touchless instrument played with your hands and a camera. It needs JavaScript and a modern browser (Chrome, Edge or Safari) to run.</p></noscript>
+
+<div id="app">
+
+  <header class="app-header">
+    <div class="logo">
+      <h1 class="logo-main">ETHER <em>VEENA</em></h1>
+      <div class="logo-sub">touchless spatial instrument</div>
+    </div>
+    <div class="version-box">
+      <span class="app-version" id="versionTag"></span>
+      <button type="button" class="update-note" id="updateNote" hidden></button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="stage-inner">
+
+      <!-- Backdrop layers (visible only when the camera image is hidden): colour/image, then the sound-reactive mandala -->
+      <div class="stage-backdrop" id="stageBackdrop"></div>
+      <canvas id="mandalaCanvas" class="stage-canvas stage-mandala" aria-hidden="true"></canvas>
+
+      <video id="video" class="is-mirrored" autoplay playsinline muted></video>
+      <!-- Camera filter output (pseudo-3D polygon reconstruction); sits exactly over the video, hidden while the filter is Off -->
+      <canvas id="filterCanvas" class="filter-canvas is-mirrored" aria-hidden="true"></canvas>
+      <!-- Video glitch layer (Build 027): reads the picture underneath, paints short bursts; below the instrument / body / trigger / information layers -->
+      <canvas id="glitchCanvas" class="glitch-canvas is-mirrored" aria-hidden="true"></canvas>
+
+      <!-- Body HUD + instrument visual, drawn in stage coordinates (see geometry.js) -->
+      <canvas id="stageCanvas" class="stage-canvas" aria-hidden="true"></canvas>
+
+      <!-- CRT monitor mode (Build 028): scanlines, phosphor mask, vignette, glass; above the picture and instrument, below the information layer -->
+      <div id="crtOverlay" class="crt-overlay" aria-hidden="true"><div class="crt-roll"></div></div>
+
+      <div class="shoot-countdown" id="shootCountdown" hidden><span class="shoot-number" id="shootNumber"></span><small>Tap to cancel</small></div>
+      <div class="shoot-flash" id="shootFlash" aria-hidden="true"></div>
+
+      <div id="overlay">
+        <div class="control-zone zone-pitch" id="zonePitch">
+          <div class="zone-center"></div>
+          <div class="zone-cursor" id="zonePitchCursor"></div>
+        </div>
+        <div class="control-zone zone-volume" id="zoneVolume">
+          <div class="zone-center"></div>
+          <div class="zone-cursor" id="zoneVolumeCursor"></div>
+        </div>
+
+        <div class="trigger-card trigger-card-right" id="rightHandCard"></div>
+        <div class="trigger-card trigger-card-left" id="leftHandCard"></div>
+        <div class="trigger-card trigger-card-face" id="faceCard"></div>
+        <div class="pitch-note-chip" id="pitchNoteChip">—</div>
+      </div>
+
+      <canvas class="oscilloscope" id="oscilloscopeCanvas" width="600" height="120"></canvas>
+
+      <div class="tracking-status" id="trackingStatus" data-state="off">
+        <span class="dot"></span>
+        <span id="trackingStatusLabel">camera off</span>
+      </div>
+
+      <button type="button" class="stage-fullscreen" id="fullscreenButton" aria-label="Full screen" title="Full screen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9V4h5" /><path d="M20 9V4h-5" /><path d="M4 15v5h5" /><path d="M20 15v5h-5" />
+        </svg>
+      </button>
+
+      <div class="stage-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+        </svg>
+        <p>Press Start, hold both hands up naturally, then tap Calibrate.</p>
+      </div>
+
+      <div class="stage-error">
+        <strong id="errorTitle">Camera unavailable</strong>
+        <p id="errorMessage"></p>
+      </div>
+
+      <!-- Performance Mode controls (only visible in full-screen mode) -->
+      <div class="perf-layer" id="perfLayer">
+        <div class="perf-tl">
+          <button type="button" class="perf-btn" id="perfExit" data-perf-action="exit"><span class="perf-label">Exit</span></button>
+          <button type="button" class="perf-btn" id="perfCalibrate" data-perf-action="calibrate"><span class="perf-label">Calibrate</span></button>
+        </div>
+        <div class="perf-tr">
+          <button type="button" class="perf-btn" id="perfFilter" data-perf-action="cycle-filter"><span class="perf-label">Filter: Off</span></button>
+          <button type="button" class="perf-btn" id="perfRandom" data-perf-action="randomize"><span class="perf-label">Random</span></button>
+          <button type="button" class="perf-btn" id="perfMenu" data-perf-action="open-presets"><span class="perf-label">Menu</span></button>
+        </div>
+        <div class="perf-bl">
+          <button type="button" class="perf-btn" id="perfPhoto" data-perf-action="photo-menu"><span class="perf-label">Photo</span></button>
+        </div>
+        <div class="perf-hint" id="perfHint">Point with your index finger and hold to press a button</div>
+        <div class="perf-note" id="perfNote"></div>
+        <div class="vcursor" id="vcursor" hidden aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <circle class="vc-halo" cx="32" cy="32" r="27"/>
+            <circle class="vc-ring" cx="32" cy="32" r="20"/>
+            <circle class="vc-arc" cx="32" cy="32" r="20" pathLength="100"/>
+            <path class="vc-tick" d="M32 4v8M32 52v8M4 32h8M52 32h8"/>
+            <path class="vc-pointer" d="M32 24l6 14-6-3-6 3z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="perf-panel" id="perfPanel" hidden></div>
+
+      <div class="stage-countdown" id="stageCountdown">
+        <span class="countdown-number" id="countdownNumber">3</span>
+        <span class="countdown-hint">Hold your natural playing position…</span>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="control-deck">
+
+    <div class="readouts">
+      <div class="readout readout-pitch">
+        <div class="readout-label"><span class="hand-swatch"></span>Pitch · right hand<span class="vibrato-indicator" id="vibratoIndicator">〜 vibrato</span></div>
+        <div class="readout-value"><span id="pitchValue">—</span><span class="unit">Hz</span></div>
+        <div class="readout-bar" id="pitchBar"></div>
+      </div>
+      <div class="readout readout-volume">
+        <div class="readout-label"><span class="hand-swatch"></span>Volume · left hand</div>
+        <div class="readout-value"><span id="volumeValue">—</span><span class="unit">%</span></div>
+        <div class="readout-bar" id="volumeBar"></div>
+      </div>
+    </div>
+
+    <button type="button" class="start-button" id="startButton">
+      <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+      <span class="spinner"></span>
+      <span id="startButtonLabel">Start</span>
+    </button>
+
+    <div class="instrument-block">
+      <div class="deck-label">Instrument</div>
+      <div class="mode-row instrument-row" id="instrumentRow" aria-label="Instrument"></div>
+    </div>
+
+    <div class="mode-row" id="modeRow" aria-label="Pitch mode">
+      <button type="button" class="mode-button is-active" data-mode="continuous" aria-pressed="true">Continuous</button>
+      <button type="button" class="mode-button" data-mode="chromatic" aria-pressed="false">Chromatic</button>
+      <button type="button" class="mode-button" data-mode="snap-scale" aria-pressed="false">Snap Scale</button>
+      <button type="button" class="mode-button" data-mode="filter-scale" aria-pressed="false">Filter Scale</button>
+      <button type="button" class="mode-button" data-mode="easy-scale" aria-pressed="false">Easy Scale</button>
+    </div>
+
+    <div class="scale-row" id="scaleRow">
+      <label>Root
+        <select id="rootSelect"></select>
+      </label>
+      <label>Scale
+        <select id="scaleSelect"></select>
+      </label>
+    </div>
+
+    <div class="note-panel" id="notePanel">
+      <div class="note-panel-header">
+        <span class="note-name" id="noteNameDisplay">—</span>
+        <span class="pluck-indicator" id="pluckIndicator" aria-hidden="true">PLUCK</span>
+        <span class="note-mode-label" id="noteModeLabel">Continuous</span>
+      </div>
+      <div class="pitch-grid" id="pitchGrid">
+        <div class="pitch-grid-ticks" id="pitchGridTicks"></div>
+        <div class="pitch-grid-indicator" id="pitchGridIndicator"></div>
+      </div>
+    </div>
+
+    <details class="panel-section" id="sectionInstrument" open>
+      <summary>Instrument</summary>
+      <div class="panel-body">
+        <p class="panel-hint" id="instrumentBlurb"></p>
+        <div id="instrumentControls" hidden>
+          <div class="sound-grid">
+            <label class="sound-field"><span>Polyphony</span><select id="polyphonySelect"></select></label>
+            <label class="sound-field"><span>When full, drop</span><select id="stealSelect"></select></label>
+          </div>
+        </div>
+        <div class="option-list" id="instrumentOptions"></div>
+        <div class="slider-list" id="instrumentSliders"></div>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionPerformance" open>
+      <summary>Performance</summary>
+      <div class="panel-body">
+        <div class="calibration-row">
+          <button type="button" class="calibrate-button" id="calibrateButton" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+            Calibrate
+          </button>
+      <button type="button" class="small-button perf-enter" id="performanceButton" title="Full-screen camera performance mode">Performance</button>
+          <span class="calibration-status" id="calibrationStatus" data-tone="neutral">Calibration: default positions</span>
+        </div>
+        <div class="sensitivity-row">
+          <label for="sensitivitySlider">Sensitivity</label>
+          <input type="range" id="sensitivitySlider" min="0.5" max="2.5" step="0.1" value="1" />
+          <span id="sensitivityValue">1.0x</span>
+        </div>
+        <div class="toggle-group">
+          <label class="toggle"><input type="checkbox" id="faceTrackingToggle" /> Face tracking</label>
+          <label class="toggle"><input type="checkbox" id="useFlatsToggle" /> Flats</label>
+        </div>
+        <p class="panel-hint" id="faceTrackingStatus">Face tracking is off — turn it on to use mouth, smile, eyes, eyebrows and head rotation as triggers.</p>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionMapping">
+      <summary>Mapping</summary>
+      <div class="panel-body">
+        <p class="panel-hint">Right Hand X → Pitch and Left Hand Y → Volume are always on. Everything below adds to them: pick what each body input controls.</p>
+        <div class="mapping-editor" id="mappingEditor"></div>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionSynth">
+      <summary>Synth</summary>
+      <div class="panel-body" id="synthBody">
+        <p class="panel-hint" id="synthThereminOnlyNote" hidden>These generic synth controls shape the Theremin voice. The selected instrument has its own controls in the Instrument panel; Effects below apply to every instrument.</p>
+        <div class="sound-grid">
+          <label class="sound-field"><span>Waveform</span>
+            <select id="waveformSelect">
+              <option value="sine">Sine</option>
+              <option value="triangle">Triangle</option>
+              <option value="sawtooth">Sawtooth</option>
+              <option value="square">Square</option>
+            </select>
+          </label>
+          <label class="sound-field"><span>Filter type</span>
+            <select id="filterTypeSelect">
+              <option value="lowpass">Low-pass</option>
+              <option value="highpass">High-pass</option>
+              <option value="bandpass">Band-pass</option>
+            </select>
+          </label>
+          <label class="sound-field"><span>LFO target</span>
+            <select id="lfoTargetSelect">
+              <option value="pitch">Pitch (vibrato)</option>
+              <option value="filterCutoff">Filter cutoff</option>
+              <option value="amplitude">Amplitude</option>
+            </select>
+          </label>
+        </div>
+        <div class="slider-list" id="synthSliders"></div>
+        <p class="panel-hint">Envelope (A/D/S/R) shapes the fade in/out when Filter Scale mutes and un-mutes; hand-driven volume stays immediate. With LFO target = Pitch, wobbling your right hand still triggers automatic vibrato.</p>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionEffects">
+      <summary>Effects</summary>
+      <div class="panel-body">
+        <label class="sound-field"><span>Delay type</span><select id="delayModeSelect"><option value="normal">Normal</option><option value="pingpong">Ping-Pong</option></select></label>
+        <div class="slider-list" id="effectSliders"></div>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionDisplay">
+      <summary>Display</summary>
+      <div class="panel-body">
+        <div class="toggle-group">
+          <label class="toggle"><input type="checkbox" id="privacyToggle" /> Privacy mode (keep my face hidden)</label>
+          <p class="panel-hint">When on, Randomize, presets and the full-screen Filter button never switch the Camera filter off, and Randomize keeps the polygons coarse. Choose a Camera filter yourself first.</p>
+          <label class="toggle"><input type="checkbox" id="showBodyControlsToggle" checked /> Body HUD</label>
+          <label class="toggle"><input type="checkbox" id="showPitchNoteToggle" checked /> Pitch / note</label>
+          <label class="toggle"><input type="checkbox" id="showOscilloscopeToggle" checked /> Oscilloscope</label>
+          <label class="toggle"><input type="checkbox" id="showTriggerHudToggle" checked /> Trigger labels</label>
+          <label class="toggle"><input type="checkbox" id="showPoseToggle" checked /> Full-body skeleton</label>
+          <label class="toggle"><input type="checkbox" id="showDebugToggle" /> Debug numbers</label>
+          <label class="sound-field face-hud-field"><span>Camera filter</span><select id="cameraFilterSelect"><option value="off">Off</option><option value="facets">Facets</option><option value="crystal">Crystal</option><option value="relief">Relief 3D</option><option value="shards">Shards</option></select></label>
+          <label class="sound-field face-hud-field" id="filterDensityField"><span>Polygon density</span><input type="range" id="filterDensity" min="0" max="100" value="50" aria-label="Polygon density: coarse to fine" /></label>
+          <label class="toggle"><input type="checkbox" id="filterSmoothToggle" checked /> Polygon motion smoothing</label>
+          <label class="sound-field face-hud-field"><span>Filter color</span><select id="filterColorMode"><option value="original">Original</option><option value="mono">Monochrome</option><option value="duo">Duotone</option></select></label>
+          <label class="sound-field face-hud-field" id="filterBaseField" hidden><span>Base color</span><input type="color" id="filterBase" value="#5abeff" /></label>
+          <label class="sound-field face-hud-field" id="filterDuoField" hidden><span>Dark → Bright</span><span class="duo-pickers"><input type="color" id="filterDark" value="#080e2e" aria-label="Dark color" /><input type="color" id="filterBright" value="#ffc478" aria-label="Bright color" /></span></label>
+          <label class="sound-field face-hud-field"><span>Music color</span><select id="filterMusic"><option value="off">Off</option><option value="audio">Audio (bass · mid · treble)</option><option value="pitch">Pitch (hue follows the note)</option><option value="both">Audio + pitch</option></select></label>
+          <label class="sound-field face-hud-field"><span>Glitch amount</span><input type="range" id="glitchAmount" min="0" max="100" value="0" aria-label="Video glitch amount (0 = off)" /></label>
+          <div id="glitchControls" hidden>
+            <label class="sound-field face-hud-field"><span>Glitch frequency</span><input type="range" id="glitchFrequency" min="0" max="100" value="40" /></label>
+            <label class="sound-field face-hud-field"><span>Block size (JPEG)</span><input type="range" id="glitchBlock" min="0" max="100" value="40" /></label>
+            <label class="sound-field face-hud-field"><span>Colour bleed</span><input type="range" id="glitchRgb" min="0" max="100" value="50" /></label>
+            <label class="sound-field face-hud-field"><span>Block corruption</span><input type="range" id="glitchDisplace" min="0" max="100" value="50" /></label>
+            <label class="sound-field face-hud-field"><span>JPEG damage</span><input type="range" id="glitchNoise" min="0" max="100" value="55" /></label>
+            <label class="sound-field face-hud-field"><span>Frame hold</span><input type="range" id="glitchHold" min="0" max="100" value="20" /></label>
+          </div>
+          <label class="toggle"><input type="checkbox" id="crtToggle" /> CRT monitor (brown-tube display)</label>
+          <label class="sound-field face-hud-field" id="crtAmountField" hidden><span>CRT intensity</span><input type="range" id="crtAmount" min="0" max="100" value="65" aria-label="CRT intensity" /></label>
+          <label class="sound-field face-hud-field"><span>Body visual</span><select id="bodyVisualSelect"><option value="skeleton">Skeleton</option><option value="mesh">Polygon mesh</option><option value="face">Face + hands only</option><option value="reactive">Sound-reactive mesh</option></select></label>
+          <label class="sound-field face-hud-field"><span>Background</span><select id="backgroundSelect"><option value="camera">Camera image</option><option value="mandala">Sound-reactive mandala</option><option value="color">Solid colour</option><option value="image">Custom image</option></select></label>
+          <label class="sound-field face-hud-field" id="backgroundColorField"><span>Colour</span><input type="color" id="backgroundColor" value="#0b0a14" /></label>
+          <label class="sound-field face-hud-field" id="backgroundImageField"><span>Image</span><input type="file" id="backgroundImage" accept="image/*" /></label>
+          <label class="toggle" id="mandalaOverlayField"><input type="checkbox" id="mandalaOverlayToggle" checked /> Sound-reactive layer over colour / image</label>
+          <label class="sound-field face-hud-field"><span>Face HUD</span><select id="faceHudSelect"><option value="outline">Outline</option><option value="mask">Full mask</option></select></label>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionVectorCamera">
+      <summary>Vector Camera</summary>
+      <div class="panel-body">
+        <p class="panel-hint">Take a photo of the Polygon camera filter as a true vector picture (SVG or PDF scale to any size without losing sharpness; PNG is a large bitmap). For the shot every control, hand marker, instrument, Glitch and CRT effect is hidden, and the file contains only the polygons. Needs the camera running (Start) and a Camera filter (it switches Facets on if the filter is off). In full screen, use the Photo button.</p>
+        <div class="sound-grid">
+          <label class="sound-field"><span>Self-timer</span><select id="vectorTimer"><option value="0">Off</option><option value="3">3 s</option><option value="5" selected>5 s</option><option value="10">10 s</option></select></label>
+          <label class="sound-field"><span>Detail</span><select id="vectorDetail"><option value="live">As shown</option><option value="fine">Fine</option><option value="finest">Finest</option></select></label>
+          <label class="sound-field"><span>Burst</span><select id="vectorBurst"><option value="1">1 shot</option><option value="3">3 shots</option><option value="5">5 shots</option></select></label>
+          <label class="sound-field"><span>Style</span><select id="vectorStyle"><option value="fill">Filled</option><option value="lines">Colour lines</option><option value="black">Black lines</option></select></label>
+          <label class="sound-field"><span>Background</span><select id="vectorBg"><option value="black">Black</option><option value="white">White</option><option value="transparent">Transparent</option><option value="custom">Custom colour</option></select></label>
+          <label class="sound-field" id="vectorBgColorField" hidden><span>Colour</span><input type="color" id="vectorBgColor" value="#101820" /></label>
+          <label class="sound-field"><span>PDF page</span><select id="vectorPage"><option value="fit">Fit to picture</option><option value="a4">A4</option><option value="a3">A3</option><option value="square">Square</option></select></label>
+          <label class="sound-field"><span>Share as</span><select id="vectorShareAs"><option value="png">PNG</option><option value="pdf">PDF</option><option value="svg">SVG</option></select></label>
+        </div>
+        <button type="button" class="small-button randomize-button" id="vectorShootButton">Take vector photo</button>
+        <p class="panel-hint" id="vectorStatus">Tap the screen during the countdown to cancel.</p>
+        <div id="vectorResult" hidden>
+          <div class="shot-strip" id="vectorStrip"></div>
+          <img id="vectorPreview" class="vector-preview" alt="Preview of the vector photo" />
+          <div class="preset-actions">
+            <button type="button" class="small-button" id="vectorSaveSvg">Save SVG</button>
+            <button type="button" class="small-button" id="vectorSavePdf">Save PDF</button>
+            <button type="button" class="small-button" id="vectorSavePng">Save PNG</button>
+            <button type="button" class="small-button" id="vectorShare">Share…</button>
+            <button type="button" class="small-button" id="vectorSaveAll" hidden>Save all</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionRandomize">
+      <summary>Randomize</summary>
+      <div class="panel-body">
+        <div class="toggle-group">
+          <label class="toggle"><input type="checkbox" data-randomize="mapping" /> Mapping</label>
+          <label class="toggle"><input type="checkbox" data-randomize="synth" checked /> Synth</label>
+          <label class="toggle"><input type="checkbox" data-randomize="effects" checked /> Effects</label>
+          <label class="toggle"><input type="checkbox" data-randomize="rootscale" /> Root &amp; Scale</label>
+          <label class="toggle"><input type="checkbox" data-randomize="display" checked /> Display</label>
+        </div>
+        <p class="panel-hint">Locks — ticked items keep their current value when you Randomize (here and with the full-screen Random button):</p>
+        <div class="toggle-group lock-grid" id="randomLocks">
+          <label class="toggle"><input type="checkbox" data-lock="root" /> Root note</label>
+          <label class="toggle"><input type="checkbox" data-lock="scale" /> Scale / Raga</label>
+          <label class="toggle"><input type="checkbox" data-lock="voice" /> Waveform &amp; filter type</label>
+          <label class="toggle"><input type="checkbox" data-lock="filter" /> Camera filter</label>
+          <label class="toggle"><input type="checkbox" data-lock="colors" /> Colours</label>
+          <label class="toggle"><input type="checkbox" data-lock="fx" /> Glitch &amp; CRT</label>
+          <label class="toggle"><input type="checkbox" data-lock="body" /> Body visual &amp; background</label>
+          <label class="toggle"><input type="checkbox" data-lock="delay" /> Delay type</label>
+        </div>
+        <button type="button" class="small-button randomize-button" id="randomizeButton">Randomize</button>
+        <p class="panel-hint" id="randomizeStatus">Picks musical values inside useful ranges — for the current instrument, its own parameters are included under Synth.</p>
+      </div>
+    </details>
+
+    <details class="panel-section" id="sectionPresets">
+      <summary>Presets</summary>
+      <div class="panel-body">
+        <p class="panel-hint">Each preset sets everything at once: Instrument · Scale · Performance · Mapping · Synth · Effects · Display.</p>
+        <div class="preset-buttons" id="presetButtons"></div>
+        <p class="panel-hint" id="presetCoreNote"></p>
+        <div class="preset-group-label">My presets</div>
+        <div class="preset-buttons" id="userPresetButtons"></div>
+        <div class="user-preset-save">
+          <input type="text" id="userPresetName" maxlength="40" placeholder="Name for the current patch" aria-label="Name for my preset" />
+          <button type="button" class="small-button" id="userPresetSave">Save current as preset</button>
+        </div>
+        <div class="preset-actions">
+          <button type="button" class="small-button" id="userPresetDelete">Delete selected</button>
+          <button type="button" class="small-button" id="userPresetExport">Export JSON</button>
+          <button type="button" class="small-button" id="userPresetImport">Import JSON</button>
+          <input type="file" id="userPresetFile" accept="application/json,.json" hidden />
+        </div>
+        <p class="panel-hint" id="userPresetStatus">My presets are saved in this browser. They keep everything: instrument, scale, mapping, synth, effects and display.</p>
+        <div class="preset-group-label">Mapping only</div>
+        <div class="preset-actions">
+          <button type="button" class="small-button" id="saveCustomButton">Save mapping only</button>
+          <button type="button" class="small-button" id="loadCustomButton">Load mapping only</button>
+          <button type="button" class="small-button" id="resetMappingButton">Reset to Classic</button>
+        </div>
+        <p class="panel-hint" id="presetStatus"></p>
+      </div>
+    </details>
+
+  </div>
+
+  <section class="about" id="about" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">About ETHER VEENA</h2>
+    <p><strong>ETHER VEENA</strong> is a free, touchless spatial instrument that runs in your browser. Your camera follows your hands, and the space around you becomes the instrument: play a <strong>Rudra Veena</strong>, a <strong>harp</strong> or a <strong>theremin</strong> without touching anything.</p>
+    <h3>Questions</h3>
+    <details><summary>What is ETHER VEENA?</summary><p>ETHER VEENA is a touchless spatial instrument that runs in a web browser. Your camera tracks your hands, and where they are in the air decides what you hear. You can play a Rudra Veena, a harp or a theremin.</p></details>
+    <details><summary>How do I play it?</summary><p>Press Start and allow the camera. Hold both hands up in a comfortable position and press Calibrate. On the theremin, move your right hand left and right for pitch and your left hand up and down for volume. On the Rudra Veena the left hand slides along the neck and the right hand plucks. On the harp you sweep an open hand across the strings.</p></details>
+    <details><summary>Is my camera video recorded or uploaded?</summary><p>No. The hand and face tracking runs on your own device. Video is not recorded, saved or sent anywhere. The tracking models are downloaded from a public CDN when you first start the camera.</p></details>
+    <details><summary>Which devices and browsers work?</summary><p>Any recent desktop or phone browser with a camera and Web Audio, such as Chrome, Edge or Safari. On a phone the app keeps the screen awake while you play, and it can be installed to the home screen.</p></details>
+    <details><summary>Is it free, and do I need to install anything?</summary><p>It is free to use in the browser, with no account and no download. You can optionally install it as an app from your browser menu.</p></details>
+    <details><summary>What else can it do?</summary><p>It has ready-made presets for each instrument including Rudra Veena ragas by time of day, a Randomize function, a Polygon camera filter that hides your face, a Vector Camera that saves the polygon picture as SVG, PDF or PNG, and saved presets of your own.</p></details>
+  </section>
+
+  <footer class="app-footer">© 2026 egoaid · ETHER VEENA</footer>
+
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

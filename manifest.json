@@ -1,0 +1,44 @@
+{
+  "id": "./",
+  "name": "ETHER VEENA",
+  "short_name": "ETHER VEENA",
+  "description": "Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15120f",
+  "theme_color": "#15120f",
+  "categories": [
+    "music",
+    "entertainment",
+    "multimedia"
+  ],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+/* ==========================================================================
+   base.css — design tokens, resets, typography, page layout
+   ETHER VEENA — © 2026 egoaid
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* -- Color: the build 006 palette (warm walnut cabinet, green signal, amber tube) -- */
+  --panel-black:      #15120f;
+  --panel-walnut:     #362720;
+  --panel-walnut-hi:  #4a3527;
+  --panel-line:       #5c4632;
+
+  --signal:           #57f0ac;   /* pitch / right hand / core */
+  --signal-dim:       #2f7d5c;
+  --tube:             #e7a53d;   /* volume / left hand / mapped */
+  --tube-dim:         #8a6425;
+
+  --paper:            #efe7d8;
+  --paper-dim:        #b7ac97;
+  --paper-faint:      #7c7261;
+
+  --danger:           #e6614a;
+
+  /* Instrument-visual accents derived from the palette (no new hues). */
+  --lcd:              #cfe9d6;
+  --lcd-dim:          #6f8f7c;
+  --lcd-bg:           #14100d;
+  --neon-purple:      #e7a53d;   /* kept as a token name for older CSS: now the amber accent */
+
+  /* -- Type ------------------------------------------------------------------ */
+  --font-display: 'Fraunces', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', Georgia, serif;
+  --font-ui:      'IBM Plex Sans', -apple-system, 'Hiragino Sans', 'Segoe UI', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+
+  --radius-cabinet: 14px;
+  --radius-control: 8px;
+
+  --shadow-inset: inset 0 0 0 1px rgba(239, 231, 216, 0.06);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[hidden] { display: none !important; }
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--panel-black);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(231, 165, 61, 0.07), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 1px, transparent 3px);
+  background-attachment: fixed;
+  color: var(--paper);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 14px calc(24px + var(--safe-bottom));
+  gap: 10px;
+}
+
+/* -- Header --------------------------------------------------------------- */
+
+.app-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 2px 4px 4px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--panel-line);
+}
+
+.logo { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex-wrap: wrap; position: relative; }
+
+/* A restrained serif mark. Normal interface = acoustic / ancient: walnut, brass, gut. */
+.logo-main {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.1rem, 4.4vw, 1.45rem);
+  line-height: 1.1;
+  letter-spacing: 0.22em;
+  margin: 0;
+  color: var(--paper);
+  white-space: nowrap;
+}
+.logo-main em { font-style: normal; color: var(--tube); }
+
+.logo-sub {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(0.54rem, 1.9vw, 0.66rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+
+/* a small brass ornament on the header rule */
+.app-header::after {
+  content: '◆';
+  position: absolute;
+  left: 50%;
+  bottom: -0.62em;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--tube-dim);
+  background: var(--panel-black);
+  padding: 0 8px;
+}
+.app-header { position: relative; }
+
+.app-version {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--paper-faint);
+  white-space: nowrap;
+}
+
+/* -- Focus visibility ------------------------------------------------------ */
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* -- Footer / copyright ----------------------------------------------------- */
+
+.app-footer {
+  flex: 0 0 auto;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--paper-faint);
+  padding: 2px 0 0;
+}
+
+/* -- Reduced motion --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* -- Small screens: tighten the frame --------------------------------------- */
+
+@media (max-width: 420px) {
+  #app {
+    padding: 10px 8px calc(10px + var(--safe-bottom));
+    gap: 8px;
+  }
+}
+
+/* -- Update notice (Build 031): small, quiet, next to the version ------------------------------------------------ */
+.version-box { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.update-note { font: 0.64rem var(--font-mono); letter-spacing: 0.02em; color: var(--signal, #e8b04a); background: none; border: 0; padding: 2px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; opacity: 0.9; }
+.update-note[hidden] { display: none; }
+.update-note:hover { opacity: 1; }
+
+/* -- About / FAQ (Build 031): plain, readable text for people and for search / answer engines ------------------------ */
+.about { max-width: 760px; margin: 28px auto 10px; padding: 0 16px; color: var(--paper-dim); font: 400 0.84rem/1.65 var(--font-ui); }
+.about h2 { margin: 0 0 8px; font: 600 1.05rem var(--font-display); color: var(--paper); letter-spacing: 0.02em; }
+.about h3 { margin: 18px 0 6px; font: 500 0.7rem var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-faint); }
+.about p { margin: 0 0 8px; }
+.about strong { color: var(--paper); font-weight: 600; }
+.about details { border-top: 1px solid rgba(239, 231, 216, 0.08); padding: 7px 0; }
+.about summary { cursor: pointer; color: var(--paper); }
+.about details p { margin: 6px 0 2px; }

@@ -1,0 +1,343 @@
+/* ==========================================================================
+   hud.css — camera overlay canvas, instrument selector, Performance Mode.
+   Palette: build 006 (base.css tokens).   ETHER VEENA — © 2026 egoaid
+   ========================================================================== */
+
+/* -- Overlay canvas (body HUD + instrument visual), same box as the video ---- */
+
+.stage-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* -- Deck labels / instrument selector ---------------------------------------- */
+
+.deck-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+  margin: 2px 2px 5px;
+}
+
+.instrument-row { flex-wrap: wrap; }
+.instrument-button.is-active { box-shadow: 0 0 0 1px var(--signal-dim); }
+
+.pluck-indicator {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  color: var(--tube);
+  opacity: 0.35;
+  margin-right: auto;
+  margin-left: 12px;
+}
+body[data-instrument]:not([data-instrument="theremin"]) .pluck-indicator { display: inline; }
+.pluck-indicator.is-hit { animation: pluck-hit 0.28s ease-out; }
+@keyframes pluck-hit {
+  0%   { opacity: 1; color: var(--paper); }
+  100% { opacity: 0.35; }
+}
+
+#synthBody.is-dimmed > :not(#synthThereminOnlyNote) { opacity: 0.4; }
+.randomize-button { margin-top: 10px; }
+.perf-enter { margin-left: 8px; }
+
+/* Theremin-only zone boxes: hidden for every other instrument (they draw their own visual). */
+body[data-instrument]:not([data-instrument="theremin"]) .control-zone { display: none; }
+
+/* ==========================================================================
+   Performance Mode — the stage becomes the whole screen.
+
+   The normal interface is acoustic / ancient (walnut, brass, gut). Here the
+   visual language deliberately turns spatial and futuristic: a transparent
+   HUD floating over the camera — thin cool-cyan lines, glass panels, soft
+   glow. Musical markers keep their green/amber so they stay recognisable.
+
+   Layering (one scale, no accidents):
+     0 video · 1 instrument/body canvas · 2 status · 10 controls layer
+     20 menu panel · 30 fingertip cursor
+   ========================================================================== */
+
+:root {
+  --perf-ui: 150, 232, 255;      /* cool cyan: HUD lines, buttons, cursor */
+  --perf-glass: rgba(6, 18, 30, 0.42);
+  --z-status: 2;
+  --z-controls: 10;
+  --z-panel: 20;
+  --z-cursor: 30;
+}
+
+.perf-layer, .perf-panel { display: none; }
+
+body.perf-mode { overflow: hidden; background: #000; }
+
+body.perf-mode .app-header,
+body.perf-mode .control-deck,
+body.perf-mode .app-footer,
+body.perf-mode footer,
+body.perf-mode .stage-fullscreen { display: none !important; }
+
+body.perf-mode .stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  min-height: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+  background: #000;
+}
+body.perf-mode .stage-inner { margin: 0; border-radius: 0; }
+
+/* The tracking indicator must never sit on top of a control: it becomes a small,
+   click-through note at the bottom centre, and disappears once tracking is fine. */
+body.perf-mode .tracking-status {
+  top: auto;
+  left: 50%;
+  right: auto;
+  bottom: max(86px, calc(env(safe-area-inset-bottom) + 70px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: var(--z-status);
+}
+body.perf-mode .tracking-status[data-state="tracking"] { display: none; }
+
+body.perf-mode .perf-layer {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-controls);
+  pointer-events: none;
+  padding: 0;
+}
+
+/* -- Buttons: compact to look at, generous to hit ---------------------------- */
+.perf-btn {
+  position: absolute;
+  pointer-events: auto;
+  --dwell: 0;
+  min-width: 92px;
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 26px;
+  border: 1px solid rgba(var(--perf-ui), 0.45);
+  background: var(--perf-glass);
+  color: rgb(var(--perf-ui));
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 14px rgba(var(--perf-ui), 0.12), inset 0 0 12px rgba(var(--perf-ui), 0.06);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+/* invisible padding: the clickable/touchable area is larger than the drawn button */
+.perf-btn::after { content: ''; position: absolute; inset: -14px; }
+.perf-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(var(--dwell));
+  background: rgba(var(--perf-ui), 0.3);
+  z-index: 0;
+}
+.perf-btn .perf-label { position: relative; z-index: 1; }
+.perf-btn.is-hover { border-color: rgb(var(--perf-ui)); box-shadow: 0 0 22px rgba(var(--perf-ui), 0.4); }
+.perf-btn.is-active { border-color: rgba(255, 190, 95, 0.9); color: rgb(255, 205, 140); }
+
+/* corners: well inside the screen edge, clear of the safe area */
+/* Top-left group (Build 027): [ Exit ] [ Calibrate ] — Exit sits immediately left of Calibrate. */
+.perf-tl {
+  position: absolute;
+  top: max(30px, calc(env(safe-area-inset-top) + 18px)); left: max(30px, calc(env(safe-area-inset-left) + 18px));
+  display: flex; gap: 12px; pointer-events: none;
+}
+.perf-tl .perf-btn { position: relative; }
+.perf-bl { position: absolute; z-index: 5; pointer-events: none; bottom: max(30px, calc(env(safe-area-inset-bottom) + 18px)); left: max(30px, calc(env(safe-area-inset-left) + 18px)); }
+.perf-bl .perf-btn { position: relative; pointer-events: auto; }
+.perf-tr {
+  position: absolute;
+  top: max(30px, calc(env(safe-area-inset-top) + 18px));
+  right: max(30px, calc(env(safe-area-inset-right) + 18px));
+  width: 364px;
+  height: 52px;
+  pointer-events: none;
+}
+.perf-tr .perf-btn { position: absolute; top: 0; }
+.perf-tr #perfMenu { right: 0; }
+.perf-tr #perfRandom { right: 122px; }
+.perf-tr #perfFilter { right: 244px; min-width: 112px; }
+
+/* Narrow screens (small phones, portrait): the same row, just smaller, so all five buttons still fit one line. */
+@media (max-width: 700px) {
+  .perf-btn { height: 44px; min-width: 60px; padding: 0 12px; font-size: 0.78rem; letter-spacing: 0.02em; }
+  .perf-btn::after { inset: -4px; }
+  .perf-tl { top: max(12px, calc(env(safe-area-inset-top) + 8px)); left: max(10px, calc(env(safe-area-inset-left) + 6px)); gap: 8px; }
+  .perf-tr { top: max(12px, calc(env(safe-area-inset-top) + 8px)); right: max(10px, calc(env(safe-area-inset-right) + 6px)); width: 260px; height: 44px; }
+  .perf-tr #perfRandom { right: 76px; }
+  .perf-tr #perfFilter { right: 160px; min-width: 96px; }
+}
+@media (max-width: 480px) {
+  .perf-btn { height: 40px; min-width: 50px; padding: 0 8px; font-size: 0.72rem; }
+  .perf-tl { gap: 6px; left: max(8px, calc(env(safe-area-inset-left) + 4px)); }
+  .perf-tr { right: max(8px, calc(env(safe-area-inset-right) + 4px)); width: 222px; height: 40px; }
+  .perf-tr #perfMenu { min-width: 50px; }
+  .perf-tr #perfRandom { right: 58px; min-width: 56px; }
+  .perf-tr #perfFilter { right: 130px; min-width: 90px; max-width: 98px; }
+  .perf-tr #perfFilter .perf-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.perf-hint, .perf-note {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: rgba(var(--perf-ui), 0.85);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.perf-hint { bottom: max(34px, calc(env(safe-area-inset-bottom) + 22px)); animation: perf-hint-fade 7s ease forwards; }
+@keyframes perf-hint-fade { 0%, 70% { opacity: 0.85; } 100% { opacity: 0; } }
+.perf-note { top: max(34px, calc(env(safe-area-inset-top) + 22px)); font-size: 0.9rem; color: rgb(var(--perf-ui)); }
+
+/* -- Menu panel (presets): a glass sheet anchored UNDER the top-right buttons, so the cursor is already next to it
+      when it opens — no long trip across the screen past other buttons. Two columns; the first item sits right
+      below MENU; Back is last. Targets are separated by a clear gap, so a sweep never lands on a neighbour. -- */
+body.perf-mode .perf-panel {
+  display: block;
+  position: absolute;
+  z-index: var(--z-panel);
+  right: max(30px, calc(env(safe-area-inset-right) + 18px));
+  top: max(98px, calc(env(safe-area-inset-top) + 86px));
+  left: auto;
+  transform: none;
+  max-height: calc(100% - max(98px, calc(env(safe-area-inset-top) + 86px)) - 24px);
+  width: min(86%, 372px);
+  padding: 12px 12px 14px;
+  border-radius: 18px;
+  background: rgba(4, 14, 24, 0.80);
+  border: 1px solid rgba(var(--perf-ui), 0.4);
+  box-shadow: 0 0 32px rgba(var(--perf-ui), 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: auto;
+  animation: perf-panel-in 0.16s ease-out;
+}
+@keyframes perf-panel-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+body.perf-mode .perf-panel[hidden] { display: none; }
+.perf-panel-title { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(var(--perf-ui), 0.7); margin: 0 4px 10px; }
+.perf-panel-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.perf-item { position: relative; width: 100%; min-width: 0; height: 46px; padding: 0 10px; font-size: 0.8rem; }
+.perf-item .perf-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.perf-item.perf-back { grid-column: 1 / -1; height: 40px; opacity: 0.85; }
+
+/* -- The UI cursor: unmistakably a POINTER, unlike the body skeleton or note markers -- */
+.vcursor {
+  position: fixed;
+  left: 0; top: 0;
+  width: 64px; height: 64px;
+  margin: -32px 0 0 -32px;
+  pointer-events: none;
+  z-index: var(--z-cursor);
+  --p: 0;
+  filter: drop-shadow(0 0 8px rgba(var(--perf-ui), 0.7));
+}
+.vcursor[hidden] { display: none; }
+.vcursor svg { display: block; overflow: visible; }
+.vc-halo { fill: rgba(var(--perf-ui), 0.08); stroke: rgba(255, 255, 255, 0.25); stroke-width: 1; }
+.vc-ring { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 2; }
+.vc-tick { stroke: rgba(255, 255, 255, 0.9); stroke-width: 2; stroke-linecap: round; fill: none; }
+.vc-pointer { fill: #fff; }
+/* dwell progress: an arc that fills around the ring */
+.vc-arc {
+  fill: none;
+  stroke: rgb(var(--perf-ui));
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--p) * 100);
+  transform: rotate(-90deg);
+  transform-origin: 32px 32px;
+}
+.vcursor.is-hover .vc-halo { fill: rgba(var(--perf-ui), 0.2); }
+.vcursor.is-cooling { opacity: 0.55; }
+.vcursor.is-cooling .vc-arc { stroke: rgba(255, 255, 255, 0.5); }
+
+/* Instrument option menus (tuning etc.) */
+.option-list { display: grid; gap: 8px; margin: 6px 0 10px; }
+.option-list .sound-field[hidden] { display: none; }
+.face-hud-field { display: inline-flex; align-items: center; gap: 8px; }
+
+/* -- Backdrop (camera hidden): colour/image + the sound-reactive mandala ------------------ */
+.stage-backdrop { position: absolute; inset: 0; background: #0b0a14 center / cover no-repeat; display: none; }
+.stage-mandala { display: none; }
+.stage[data-bg]:not([data-bg="camera"]) .stage-backdrop,
+.stage[data-bg]:not([data-bg="camera"]) .stage-mandala { display: block; }
+/* the video keeps playing (tracking needs it) but is not shown */
+.stage[data-bg]:not([data-bg="camera"]) #video { opacity: 0; }
+#backgroundColorField, #backgroundImageField, #mandalaOverlayField { display: none; }
+body[data-bg="mandala"] #backgroundColorField,
+body[data-bg="color"] #backgroundColorField,
+body[data-bg="image"] #backgroundImageField,
+body[data-bg="color"] #mandalaOverlayField,
+body[data-bg="image"] #mandalaOverlayField { display: inline-flex; }
+
+/* HAND CHECK (diagnostic left/right view) — see js/handDiagnostics.js */
+.handcheck { position: absolute; inset: 0; z-index: 30; pointer-events: none; font: 11px/1.35 ui-monospace, Menlo, monospace; }
+.handcheck-panel { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); max-width: min(96%, 640px); padding: 8px 10px; border-radius: 8px; background: rgba(10, 8, 6, 0.82); color: #f4ecd8; pointer-events: auto; cursor: pointer; border: 1px solid rgba(244, 236, 216, 0.3); }
+.handcheck-panel.is-frozen { border-color: #ffb84a; box-shadow: 0 0 0 2px rgba(255, 184, 74, 0.5); }
+.handcheck-panel hr { border: 0; border-top: 1px solid rgba(244, 236, 216, 0.25); margin: 4px 0; }
+.hc-dim { opacity: 0.65; } .hc-warn { color: #ff7a6b; font-weight: 700; } .hc-hand { color: #ffb84a; }
+.handcheck-tags { position: absolute; inset: 0; }
+.handcheck-tag { position: absolute; transform: translate(-50%, -50%); padding: 3px 6px; border-radius: 6px; background: rgba(10, 8, 6, 0.85); color: #fff; font-weight: 700; white-space: nowrap; border: 2px solid #aaa; text-align: left; }
+.handcheck-tag.is-left { border-color: #4fd8ff; } .handcheck-tag.is-right { border-color: #ffb84a; }
+
+/* -- Click confirmation: a button that has just FIRED flashes, pops and sends out a ring ------------------------- */
+.perf-btn.is-fired { animation: perf-fire 0.62s cubic-bezier(0.2, 0.7, 0.2, 1); border-color: #fff; color: #fff; overflow: visible; z-index: 3; }
+.perf-btn.is-fired .perf-fire-ring { display: block; }
+@keyframes perf-fire {
+  0% { transform: scale(1); background: rgba(var(--perf-ui), 0.95); box-shadow: 0 0 0 0 rgba(var(--perf-ui), 0.9), 0 0 40px 10px rgba(var(--perf-ui), 0.9); }
+  25% { transform: scale(1.1); background: rgba(var(--perf-ui), 0.6); box-shadow: 0 0 0 10px rgba(var(--perf-ui), 0.45), 0 0 32px 6px rgba(var(--perf-ui), 0.7); }
+  100% { transform: scale(1); background: var(--perf-glass); box-shadow: 0 0 0 26px rgba(var(--perf-ui), 0), 0 0 14px rgba(var(--perf-ui), 0.12); }
+}
+.perf-fire-ring { display: none; position: absolute; inset: 0; border-radius: inherit; border: 2px solid #fff; pointer-events: none; animation: perf-ring 0.62s ease-out forwards; z-index: 2; }
+@keyframes perf-ring { from { opacity: 0.95; transform: scale(1); } to { opacity: 0; transform: scale(1.45, 1.9); } }
+/* about to fire: the button brightens and the label lifts as the dwell nears its end */
+.perf-btn.is-hover .perf-label { transform: translateY(-1px); text-shadow: 0 0 10px rgba(var(--perf-ui), 0.9); }
+.perf-btn.is-hover { background: rgba(var(--perf-ui), 0.16); }
+/* the cursor itself bursts when something fires */
+.vcursor.is-fired .vc-halo { animation: vc-burst 0.5s ease-out; }
+.vcursor.is-fired .vc-ring { animation: vc-ring-pop 0.5s ease-out; }
+@keyframes vc-burst { 0% { r: 27; fill: rgba(255, 255, 255, 0.85); } 100% { r: 46; fill: rgba(var(--perf-ui), 0); } }
+@keyframes vc-ring-pop { 0% { stroke: #fff; stroke-width: 6; } 100% { stroke: rgba(255, 255, 255, 0.85); stroke-width: 2; } }
+.perf-note.is-toast { animation: perf-toast 2.6s ease forwards; }
+@keyframes perf-toast { 0% { opacity: 0; transform: translate(-50%, -6px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+
+/* Camera-filter colour pickers */
+.duo-pickers { display: inline-flex; gap: 8px; }
+.duo-pickers input[type="color"], #filterBase { width: 44px; height: 28px; padding: 0; border: 1px solid rgba(239, 231, 216, 0.3); border-radius: 6px; background: none; cursor: pointer; }
+
+/* Build 028: twelve presets in the menu — a little shorter on low (landscape) screens so more fit before scrolling */
+@media (max-height: 520px) { .perf-item { height: 38px; } .perf-item.perf-back { height: 34px; } }
+/* Build 030: keep the Photo button clear of the bottom hint line on phones */
+@media (max-width: 700px) { .perf-bl { bottom: max(58px, calc(env(safe-area-inset-bottom) + 46px)); left: max(10px, calc(env(safe-area-inset-left) + 6px)); } }

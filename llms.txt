@@ -1,0 +1,27 @@
+# ETHER VEENA
+
+> A free, touchless spatial instrument that runs in a web browser. A camera tracks the player's hands; where the hands are in the air decides the sound. Instruments: Rudra Veena, harp and theremin. No install, no account. Video is processed on the device and is never uploaded.
+
+ETHER VEENA is a single-page web app (static files, vanilla JavaScript, Web Audio API, MediaPipe hand and face tracking). It also installs as a PWA and keeps the phone screen awake while playing (Screen Wake Lock API).
+
+## Use it
+- [ETHER VEENA (the app)](https://egoaid.github.io/ether-veena/): press Start, allow the camera, hold both hands up, press Calibrate.
+
+## What it does
+- Theremin: right hand left/right = pitch, left hand up/down = volume. Pitch modes: continuous, chromatic, snap to scale, filter scale, easy scale; 30 scales.
+- Rudra Veena: four main strings with 24 frets and chikari strings; left index finger slides on the neck, curling it bends the string (meend); right-hand finger curls pluck; ragas and researched tunings; jawari-style buzz.
+- Harp: 47 strings (steel, gut, nylon); sweep an open hand across them.
+- Mapping: every finger, hand depth and face input (mouth, smile, head rotation) can control a sound parameter (filter, delay, reverb, pan, envelope, LFO).
+- Presets for each instrument (including Rudra Veena ragas by time of day), Randomize with locks, and the player's own saved presets.
+- Display: Polygon camera filters that make the face unrecognisable (Privacy mode), JPEG-style glitch, CRT monitor look, sound-reactive mandala background.
+- Vector Camera: saves the polygon picture as SVG, PDF or PNG with a self-timer and burst shooting; shares files through the phone's share sheet.
+
+## Privacy
+- Hand and face tracking runs locally in the browser. Video is not recorded, stored or transmitted.
+- User presets and settings are stored only in the browser's local storage.
+
+## Requirements
+- A recent browser with camera access and Web Audio (Chrome, Edge, Safari). Works on desktop and smartphone.
+
+## Credit
+- © 2026 egoaid. All rights reserved.

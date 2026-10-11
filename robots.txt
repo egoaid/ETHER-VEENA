@@ -1,0 +1,5 @@
+# ETHER VEENA — everything public may be crawled, including AI search and answer engines.
+User-agent: *
+Allow: /
+
+Sitemap: https://egoaid.github.io/ether-veena/sitemap.xml
