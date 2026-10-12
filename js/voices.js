@@ -76,6 +76,8 @@ const contactCurve = (k, b) => {
   return _curveCache.get(key);
 };
 
+const LIGHT_TAU_TO_SILENCE = 5.5; // Light sound engine: a note is freed at ≈ -48 dB (faded out first)
+const LIGHT_MAX_POLYPHONY = 8;
 const TAU_TO_SILENCE = 9; // 9 time-constants ≈ -78 dB: oscillators are stopped only when the tail is inaudible (no stop click)
 
 export const STEAL_STRATEGIES = {
@@ -129,6 +131,7 @@ export class Voice {
     this._delay = o.delay ?? 0; // seconds: lets one gesture schedule a strum of several strings
     this._onDestroyed = o.onDestroyed || null;
     this._vibratoNode = o.vibratoNode || null;
+    this._light = !!o.light; // Light sound engine: fewer oscillators per note, shorter tails (less CPU, simpler tone)
     this._cleanupTimer = null;
     this._oscs = [];
     this._nodes = [];
@@ -170,7 +173,15 @@ export class Voice {
     } else this.env.connect(this.out);
 
     const floor = recipe.partialFloor ?? 0;
+    const nyqAll = (ctx.sampleRate || 44100) * 0.5;
+    // A decaying note's partial reaches the same -78 dB the whole note is freed at much sooner than the note itself: its level is note-envelope × its own decay,
+    // e^(-t/τ)·e^(-t/τp) → t = 9·τ·τp/(τ+τp). Only for notes that die away (sustain 0, no floor); sustained notes are untouched.
+    const dies = !(recipe.sustain > 0.0005) && !(recipe.partialFloor > 0);
+    const partialStopFor = (p) => { if (!dies) return null; const tau = Math.max(0.01, recipe.envTau); const tp = Math.max(0.02, recipe.envTau * (p.decayMul ?? 1)); return TAU_TO_SILENCE * tau * tp / (tau + tp); };
     for (const p of recipe.partials) {
+      // a partial above the Nyquist frequency can only alias (a false, inharmonic tone) — and costs an oscillator; skip it
+      if (o.freq * p.ratio >= nyqAll * 0.98) continue;
+      const partialStop = partialStopFor(p);
       const pg = this._track(ctx.createGain());
       const g0 = p.gain;
       pg.gain.setValueAtTime(g0, now);
@@ -200,7 +211,7 @@ export class Voice {
         buzzIn.connect(pg);
       }
       const bzc = p.buzz ? (p.buzz.cents ?? recipe.pairCents ?? 2) : 0;
-      const detunes = p.buzz ? [0, -bzc, bzc] : p.pair ? [-(recipe.pairCents ?? 2), recipe.pairCents ?? 2] : [0];
+      const detunes = p.buzz ? (this._light ? [0, bzc] : [0, -bzc, bzc]) : p.pair ? [-(recipe.pairCents ?? 2), recipe.pairCents ?? 2] : [0];
       for (const d of detunes) {
         const osc = ctx.createOscillator();
         osc.type = recipe.wave || 'sine';
@@ -213,6 +224,7 @@ export class Voice {
         osc.connect(p.buzz ? (d === 0 ? pg : buzzIn) : p.pair ? this._pairGain(pg) : pg);
         if (this._vibratoNode) this._vibratoNode.connect(osc.detune);
         osc.start(now);
+        if (partialStop !== null) osc.stop(now + attack + partialStop); // this partial is inaudible long before the whole note is: free its oscillators then
         this._oscs.push(osc);
       }
     }
@@ -279,8 +291,12 @@ export class Voice {
       this._nodes.push(src);
     }
 
-    // Free everything once the note has certainly decayed (ring-out notes).
-    this._scheduleCleanup((attack + recipe.envTau * TAU_TO_SILENCE + 0.2) * 1000);
+    // Free everything once the note has certainly decayed (ring-out notes). Light: at ≈ -48 dB, after a short fade (no stop click).
+    if (this._light) {
+      const tEnd = now + attack + recipe.envTau * LIGHT_TAU_TO_SILENCE;
+      this.out.gain.setTargetAtTime(0, tEnd, 0.02);
+      this._scheduleCleanup((this._delay + attack + recipe.envTau * LIGHT_TAU_TO_SILENCE + 0.2) * 1000);
+    } else this._scheduleCleanup((attack + recipe.envTau * TAU_TO_SILENCE + 0.2) * 1000);
   }
 
   _track(node) {
@@ -491,7 +507,9 @@ export class VoiceManager {
    */
   constructor(ctx, destination, o = {}) {
     this.ctx = ctx;
-    this.maxPolyphony = Math.max(1, o.maxPolyphony ?? 8);
+    this._requestedPoly = Math.max(1, o.maxPolyphony ?? 8);
+    this.light = !!o.light;
+    this.maxPolyphony = this.light ? Math.min(this._requestedPoly, LIGHT_MAX_POLYPHONY) : this._requestedPoly;
     this.stealStrategy = o.stealStrategy ?? 'oldest';
     /** @type {Voice[]} voices that are alive (active or releasing) */
     this.voices = [];
@@ -548,14 +566,18 @@ export class VoiceManager {
 
   // More simultaneous voices → each one a bit quieter, so 16-voice chords don't clip.
   _applyBusGain() {
-    this.bus.gain.setTargetAtTime(0.9 / Math.pow(this.maxPolyphony, 0.35), this.ctx.currentTime, 0.05);
+    this.bus.gain.setTargetAtTime(0.9 / Math.pow(this._requestedPoly, 0.35), this.ctx.currentTime, 0.05);
   }
 
   setMaxPolyphony(n) {
-    this.maxPolyphony = Math.max(1, Math.floor(n));
-    this._applyBusGain();
+    this._requestedPoly = Math.max(1, Math.floor(n));
+    this.maxPolyphony = this.light ? Math.min(this._requestedPoly, LIGHT_MAX_POLYPHONY) : this._requestedPoly;
+    this._applyBusGain(); // loudness follows the polyphony the user chose, so Light is not quieter / louder
     while (this.voices.length > this.maxPolyphony) this._steal();
   }
+
+  /** Light sound engine on/off: applies to notes played from now on (sounding notes finish as they were). */
+  setLight(on) { this.light = !!on; this.setMaxPolyphony(this._requestedPoly); }
 
   setStealStrategy(name) {
     if (STEAL_STRATEGIES[name]) this.stealStrategy = name;
@@ -583,6 +605,7 @@ export class VoiceManager {
       tag,
       delay,
       noiseBuffer: this.noiseBuffer,
+      light: this.light,
       vibratoNode: this.vibrato,
       onDestroyed: (v) => this._remove(v),
     });

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 build 033 — 2026-10-12
+- Sound no longer stays silent after the phone interrupts it: the audio context is resumed automatically (on return to the page, on the next touch, and when its clock freezes); if the phone refuses, a quiet "tap the screen" note appears.
+- Reverb costs far less audio-thread time with the same sound: only the convolver that is heard gets input, none while Reverb Mix is 0, and the impulse response is built in small slices instead of one long block.
+- Notes free their oscillators as soon as each partial is inaudible (same −78 dB point as before, measured difference to the previous build −77 dB), and partials above the Nyquist frequency are no longer created (they could only alias).
+- New Sound engine setting (Display section): Standard (full quality, the default on every device) or Light (fewer oscillators per note, shorter tails and reverb, at most 8 notes at once). Light renders about 2.5× faster on Rudra Veena.
+- Small / slow phones ask the camera for 960×540 instead of 1280×720 (hand tracking does not need more).
+
 ## 0.7.0 build 032 — 2026-10-12
 - Display performance (Display section): Auto / Full / Lite / Minimal. Lite and Minimal use coarser polygons, a lower-resolution canvas, a slower mesh refresh, no motion smoothing, no Glitch and a lighter (or no) CRT, so a small phone keeps playing sound while the Polygon filter is on.
 - Auto starts in Lite on small iPhones (SE / mini class) and low-spec devices, and steps down by itself when the picture takes too long; the level it learns is remembered.
@@ -13,7 +20,6 @@
 - Screen Wake Lock: the phone screen stays on while the camera is running (requested again after the page returns to the foreground).
 - Quiet update notice next to the version label when a newer build is on the server.
 - Public site files: new icon set (favicons, Apple touch icon, maskable, social image), `manifest.json`, `service-worker.js`, `robots.txt`, `sitemap.xml`, `llms.txt`, social/OGP and structured data, About / FAQ section.
-- Icon redesign: Rudra / Shiva motif (trishula, crescent moon, damaru, third eye) on indigo. New Display performance setting (Auto / Full / Lite / Minimal) for slower phones.
 
 ## 0.7.0 build 030 — 2026-10-11
 - Full-screen Photo menu (shoot, timer, detail, burst) with share / save result menu.

@@ -42,6 +42,7 @@ const FINE_PITCH_MAP_SEMITONE_RANGE = 4; // ±4 semitones at the mapping's fine-
 const MAX_DELAY_SECONDS = 1.0;
 const REVERB_MIN_SECONDS = 0.4;
 const REVERB_MAX_SECONDS = 3.5;
+const REVERB_MAX_SECONDS_LIGHT = 2.0; // Light sound engine: a shorter convolution tail (cheaper)
 const REVERB_WET_BOOST = 1.7; // the convolved signal is much quieter than the dry one: compensate so Mix means what it says
 const REVERB_REGEN_THRESHOLD = 0.04; // don't rebuild the impulse response for tiny changes
 const REVERB_REGEN_MIN_MS = 260; // …nor more often than this (a trailing rebuild catches the latest value)
@@ -109,6 +110,7 @@ export class ThereminEngine {
 
   async start() {
     if (this.isRunning) return;
+    this._starting = true;
 
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) throw new Error('Web Audio API is not supported in this browser.');
@@ -230,7 +232,7 @@ export class ThereminEngine {
     this.pingPong.out.connect(this.pingWetGain);
     this.pingWetGain.connect(this.masterGain);
     // Reverb send + wet
-    this.handGain.connect(this.convolver); this.handGain.connect(this.convolverB);
+    this._revConn = { A: false, B: false }; this._syncReverbInput(); // the convolvers get input only while they are needed (see _syncReverbInput)
     this.convolver.connect(this._xfA); this.convolverB.connect(this._xfB);
     this._xfA.connect(this.reverbWetGain); this._xfB.connect(this.reverbWetGain);
     this.reverbWetGain.connect(this.masterGain);
@@ -244,7 +246,7 @@ export class ThereminEngine {
     this.osc1.start();
     this.osc2.start();
 
-    this.isRunning = true;
+    this.isRunning = true; this._starting = false;
     this.currentVolume01 = 0;
   }
 
@@ -322,7 +324,7 @@ export class ThereminEngine {
     this._xfB = null;
     this.limiter = null;
     this.softClip = null;
-    clearTimeout(this._reverbTimer);
+    clearTimeout(this._reverbTimer); clearTimeout(this._revIdleTimer); clearTimeout(this._revOldTimer); this._irToken = (this._irToken || 0) + 1; this._revConn = null;
     this.reverbWetGain = null;
     this.masterGain = null;
     this.panner = null;
@@ -635,7 +637,34 @@ export class ThereminEngine {
 
   setReverbMix01(value01) {
     this.reverbMix01 = clamp01(value01);
-    if (this.isRunning) this.reverbWetGain.gain.setTargetAtTime(this.reverbMix01 * REVERB_WET_BOOST, this.audioContext.currentTime, 0.05);
+    if (this.isRunning) {
+      this.reverbWetGain.gain.setTargetAtTime(this.reverbMix01 * REVERB_WET_BOOST, this.audioContext.currentTime, 0.05);
+      this._syncReverbInput();
+    }
+  }
+
+  /**
+   * Convolution is the most expensive thing in the effects chain, and two ConvolverNodes (A/B, for the click-free impulse swap) used to run all the time —
+   * even with Reverb Mix at 0. Now only the convolver that is heard gets input, and none while the mix is 0 (a short delay lets the wet gain finish fading first).
+   * Same sound, a fraction of the audio-thread work.
+   */
+  _setRevIn(key, on) {
+    if (!this._revConn || this._revConn[key] === on || !this.handGain) return;
+    const node = key === 'A' ? this.convolver : this.convolverB;
+    try { if (on) this.handGain.connect(node); else this.handGain.disconnect(node); this._revConn[key] = on; } catch (_e) { /* node already gone */ }
+  }
+  _syncReverbInput() {
+    if ((!this.isRunning && !this._starting) || !this._revConn) return;
+    clearTimeout(this._revIdleTimer);
+    if (this.reverbMix01 > 0.001) { this._setRevIn(this._reverbActive, true); return; }
+    this._revIdleTimer = setTimeout(() => { if (this.isRunning && this.reverbMix01 <= 0.001) { this._setRevIn('A', false); this._setRevIn('B', false); } }, 450);
+  }
+
+  /** 'standard' (full quality, the default) or 'light' (less CPU: shorter reverb tail; the voice pool is switched by the app). */
+  setSoundLight(on) {
+    on = !!on; if (on === !!this.soundLight) return;
+    this.soundLight = on;
+    if (this.isRunning) { this._lastReverbSize = null; this._rebuildReverbImpulse(this.reverbSize01); }
   }
 
   setReverbSize01(value01) {
@@ -680,33 +709,51 @@ export class ThereminEngine {
     this._lastReverbAt = nowMs;
 
     const ctx = this.audioContext;
-    const durationSeconds = REVERB_MIN_SECONDS + (REVERB_MAX_SECONDS - REVERB_MIN_SECONDS) * size01;
+    const durationSeconds = REVERB_MIN_SECONDS + ((this.soundLight ? REVERB_MAX_SECONDS_LIGHT : REVERB_MAX_SECONDS) - REVERB_MIN_SECONDS) * size01;
     const length = Math.max(1, Math.floor(ctx.sampleRate * durationSeconds));
     const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
-    const decayExponent = 1.5 + size01 * 2.5; // bigger "size" also decays a touch more gently
+    const token = (this._irToken = (this._irToken || 0) + 1);
+    const finish = () => { if ((this.isRunning || this._starting) && token === this._irToken) this._swapImpulse(buffer, force); };
+    // At start-up the impulse is built at once; later rebuilds are sliced into small chunks so a slow phone's main thread (hand tracking, picture) is never blocked for tens of ms.
+    this._fillImpulse(buffer, size01, force ? Infinity : 16384, () => token === this._irToken && (this.isRunning || this._starting), finish);
+  }
 
-    // A room, not just decaying noise: a short pre-delay, a handful of discrete early
-    // reflections (they give the ear the sense of a space), then a dense tail that loses
-    // high frequencies as it decays (a one-pole low-pass whose cutoff falls with time).
-    const preDelay = Math.floor(ctx.sampleRate * 0.012);
-    for (let channel = 0; channel < 2; channel++) {
-      const data = buffer.getChannelData(channel);
-      let lp = 0;
-      for (let i = preDelay; i < length; i++) {
+  /** A room, not just decaying noise: a short pre-delay, a handful of early reflections, then a dense tail that darkens as it decays. Filled `chunk` samples at a time. */
+  _fillImpulse(buffer, size01, chunk, alive, done) {
+    const sr = this.audioContext.sampleRate; const length = buffer.length;
+    const decayExponent = 1.5 + size01 * 2.5; // bigger "size" also decays a touch more gently
+    const preDelay = Math.floor(sr * 0.012);
+    const taps = [0.011, 0.019, 0.027, 0.041, 0.053, 0.071];
+    const chans = [buffer.getChannelData(0), buffer.getChannelData(1)];
+    let ch = 0; let i = preDelay; let lp = 0;
+    const step = () => {
+      if (!alive()) return;
+      const data = chans[ch]; const end = Math.min(length, i + chunk);
+      for (; i < end; i++) {
         const t = (i - preDelay) / (length - preDelay);
         const damp = 0.9 - 0.75 * t; // brighter early, darker late
         lp += ((Math.random() * 2 - 1) - lp) * damp;
         data[i] = lp * Math.pow(1 - t, decayExponent) * 1.6;
       }
-      const taps = [0.011, 0.019, 0.027, 0.041, 0.053, 0.071];
+      if (i < length) { setTimeout(step, 0); return; }
       taps.forEach((sec, k) => {
-        const idx = preDelay + Math.floor(ctx.sampleRate * sec * (channel ? 1.07 : 1));
+        const idx = preDelay + Math.floor(sr * sec * (ch ? 1.07 : 1));
         if (idx < length) data[idx] += (k % 2 ? -1 : 1) * (0.9 - k * 0.1);
       });
-    }
+      if (ch === 0) { ch = 1; i = preDelay; lp = 0; if (chunk === Infinity) step(); else setTimeout(step, 0); return; }
+      done();
+    };
+    step();
+  }
+
+  _swapImpulse(buffer, force) {
+    const ctx = this.audioContext;
     // load the idle convolver, then cross-fade (a hard buffer swap cuts the tail and clicks)
     const toB = this._reverbActive === 'A';
     const idle = toB ? this.convolverB : this.convolver;
+    const old = toB ? 'A' : 'B';
+    const idleKey = toB ? 'B' : 'A';
+    if (this.reverbMix01 > 0.001) this._setRevIn(idleKey, true);
     idle.buffer = buffer;
     const now = ctx.currentTime;
     const fadeIn = toB ? this._xfB.gain : this._xfA.gain; const fadeOut = toB ? this._xfA.gain : this._xfB.gain;
@@ -715,6 +762,10 @@ export class ThereminEngine {
       fadeIn.setTargetAtTime(1, now, REVERB_XFADE_TAU); fadeOut.setTargetAtTime(0, now, REVERB_XFADE_TAU);
     }
     this._reverbActive = toB ? 'B' : 'A';
+    // once the cross-fade is over (≈ 9 time constants) the old convolver gets no more input and its processing winds down
+    clearTimeout(this._revOldTimer);
+    this._revOldTimer = setTimeout(() => { if (this.isRunning && this._reverbActive !== old) this._setRevIn(old, false); }, Math.ceil(REVERB_XFADE_TAU * 9 * 1000) + 60);
+    if (force) this._setRevIn(old, false);
   }
 
   // -- Output -------------------------------------------------------------------------

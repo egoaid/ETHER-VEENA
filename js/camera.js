@@ -11,6 +11,7 @@ export class Camera {
     this.video = videoElement;
     this.stream = null;
     this.facingMode = 'user'; // 'user' (front) or 'environment' (rear)
+    this.idealSize = { width: 1280, height: 720 }; // set by the app (smaller on small / slow phones)
     this.hasMultipleCameras = false;
   }
 
@@ -61,8 +62,8 @@ export class Camera {
       audio: false,
       video: {
         facingMode: { ideal: this.facingMode },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: this.idealSize.width },
+        height: { ideal: this.idealSize.height },
       },
     };
 

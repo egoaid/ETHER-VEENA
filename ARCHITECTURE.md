@@ -18,6 +18,7 @@ js/
   presets.js          built-in unified presets          userPresets.js   My presets + Randomize locks (pure)
   randomize.js        musical random patches            performanceMode.js · virtualCursor.js   full-screen mode and finger pointing
   wakeLock.js         Screen Wake Lock                  updateCheck.js · appVersion.js   quiet "newer version" notice
+  audioGuard.js       resumes a suspended/interrupted audio context · displayLoad.js  Display performance + Sound engine settings
 tests/                node tests/run-all.mjs (unit + wiring); tests/browser/*.py need Playwright + Chromium
 ```
 

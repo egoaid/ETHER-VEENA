@@ -16,7 +16,7 @@
    version instead of serving stale cached files.
    ========================================================================== */
 
-const CACHE_NAME = 'ether-veena-shell-v0.7.0-032';
+const CACHE_NAME = 'ether-veena-shell-v0.7.0-033';
 
 const SHELL_FILES = [
   './',
@@ -72,6 +72,7 @@ const SHELL_FILES = [
   './js/appVersion.js',
   './js/updateCheck.js',
   './js/displayLoad.js',
+  './js/audioGuard.js',
   './js/randomize.js',
   './icons/icon-192.png',
   './icons/icon-512.png',

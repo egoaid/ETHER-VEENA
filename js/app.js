@@ -22,6 +22,7 @@ import { HandTracker } from './handTracking.js';
 import { FaceTracker } from './faceTracking.js';
 import { HandControls } from './handControls.js';
 import { ThereminEngine } from './theremin.js';
+import { AudioGuard } from './audioGuard.js';
 import { TriggerEngine, TRIGGER_DEFS, TRIGGER_GROUPS } from './triggers.js';
 import { MappingEngine, DESTINATIONS, PRESETS } from './mapping.js';
 import { UI } from './ui.js';
@@ -47,7 +48,7 @@ import { anchorFor, destinationName, formatDestinationValue, formatTriggerValue 
 import { destinationById } from './mapping.js';
 import { UNIFIED_PRESETS, unifiedPresetById, PRESET_GROUPS } from './presets.js';
 import { WakeLockKeeper } from './wakeLock.js';
-import { LoadWatch, MODES, qualityOf, deviceHint, resolveLevel, loadDisplaySettings, saveDisplayMode, saveLearned } from './displayLoad.js';
+import { LoadWatch, MODES, qualityOf, deviceHint, resolveLevel, loadDisplaySettings, saveDisplayMode, saveLearned, loadSoundMode, saveSoundMode, cameraSizeFor } from './displayLoad.js';
 import { APP_VERSION, APP_BUILD } from './appVersion.js';
 import { checkForUpdate, applyUpdate } from './updateCheck.js';
 import { meshToSvg, meshToPdf, visibleRect, drawMeshToCtx, sizeForPng } from './vectorCamera.js';
@@ -193,6 +194,9 @@ class App {
     this._shoot = null; this._vector = { shots: [], sel: 0, urls: [], stamp: '', prepared: null, prepToken: 0 };
     this._store = null; try { this._store = window.localStorage; } catch { /* storage unavailable */ }
     this.perfSettings = this._store ? loadDisplaySettings(this._store) : { mode: 'auto', learned: 0 };
+    this.soundMode = this._store ? loadSoundMode(this._store) : 'standard';
+    this.audioGuard = new AudioGuard({ getContext: () => this.theremin?.audioContext ?? null, onStalled: () => this.ui.showToast('Sound is paused by the phone. Tap the screen to resume.', 8000), onRecovered: () => this.ui.showToast('Sound is back.', 2500) });
+    this._lastGuardAt = 0;
     this.loadWatch = new LoadWatch(); this._lastLoopAt = 0;
     this.displayLevel = resolveLevel(this.perfSettings.mode, { hint: deviceHint(), learned: this.perfSettings.learned });
     this.userPresets = this._store ? loadUserPresets(this._store) : [];
@@ -287,6 +291,10 @@ class App {
       this.displayLevel = resolveLevel(m, { hint: deviceHint(), learned: this.perfSettings.learned }); this.loadWatch.reset(); this._applyDisplayLevel();
     });
     this._applyDisplayLevel();
+    // Sound engine (Build 033): Standard (full quality, always the default) | Light (fewer oscillators per note, shorter tails and reverb, ≤ 8 voices)
+    ui.el.soundEngineSelect.value = this.soundMode;
+    ui.el.soundEngineSelect.addEventListener('change', () => { this.soundMode = ui.el.soundEngineSelect.value === 'light' ? 'light' : 'standard'; if (this._store) saveSoundMode(this._store, this.soundMode); this._applySoundMode(); });
+    this._applySoundMode();
     ui.el.privacyToggle.checked = this.privacy;
     ui.el.privacyToggle.addEventListener('change', () => { this.privacy = ui.el.privacyToggle.checked; try { localStorage.setItem('etherVeena.privacy', this.privacy ? '1' : '0'); } catch { /* ignore */ } });
     ui.el.vectorShootButton.addEventListener('click', () => this.takeVectorPhoto());
@@ -789,6 +797,15 @@ class App {
   }
 
   /** Apply the current display level to everything that draws (polygon filter, glitch, CRT layers) and say so in the Display section. */
+  _applySoundMode() {
+    const light = this.soundMode === 'light';
+    this.theremin.setSoundLight(light);
+    if (this.voices) this.voices.setLight(light);
+    this.ui.el.soundEngineStatus.textContent = light
+      ? 'Light: fewer oscillators per note, shorter tails and reverb, at most 8 notes at once. Applies to the next notes.'
+      : 'Standard is the full sound. If the sound stutters or drops out on your phone, try Light.';
+  }
+
   _applyDisplayLevel() {
     const l = this.displayLevel; const q = qualityOf(l);
     this.cameraFilter.setQuality(l); this.glitch.setSuppressed(!q.glitch);
@@ -1017,14 +1034,18 @@ class App {
     this.ui.setTrackingState('off');
 
     try {
+      this.camera.idealSize = cameraSizeFor(deviceHint());
       await this.camera.start();
       this.ui.setMirrored(this.camera.facingMode === 'user');
       this.handControls.isMirrored = this.camera.facingMode === 'user';
       this.overlay.setMirrored(this.camera.facingMode === 'user');
 
       if (!this.handTracker.landmarker) await this.handTracker.load();
+      this.theremin.setSoundLight(this.soundMode === 'light');
       await this.theremin.start();
+      this.audioGuard.start();
       this.voices = new VoiceManager(this.theremin.audioContext, this.theremin.getVoiceDestination(), {
+        light: this.soundMode === 'light',
         maxPolyphony: this.instrumentSettings[this.instrumentId].polyphony,
         stealStrategy: this.instrumentSettings[this.instrumentId].steal,
       });
@@ -1058,6 +1079,7 @@ class App {
   stop() {
     this.isLive = false;
     this.wakeLock.release();
+    this.audioGuard.stop();
     if (this._loopHandle) { cancelAnimationFrame(this._loopHandle); this._loopHandle = null; }
     this._cancelCalibrationCountdown();
     if (this.voices) { this.voices.dispose(); this.voices = null; }
@@ -1234,6 +1256,7 @@ class App {
         this.cameraFilter.update(nowMs, { bands: this.bands, midi: f > 20 ? midiOfHz(f) : null, level: this.bands.rms });
       }
 
+      if (nowMs - this._lastGuardAt > 1000) { this._lastGuardAt = nowMs; this.audioGuard.tick(); } // the sound must never stay silently dead
       this.glitch.update(nowMs); // after the polygon filter, before anything is drawn above it
       if (this.perfSettings.mode === 'auto' && this.displayLevel < 2 && (this.cameraFilter.id !== 'off' || this.glitch.enabled)) {
         // the watchdog: what the picture cost this frame, and how long frames take overall

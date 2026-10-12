@@ -56,3 +56,6 @@ Take a photo of the polygon picture with a self-timer and optional burst of up t
 
 ## Display performance
 The Display section has a "Display performance" setting (Auto / Full / Lite / Minimal). Auto starts lighter on small phones and lowers the visual load by itself if the picture gets slow.
+
+## If the sound stutters
+The Display section also has a **Sound engine** setting. *Standard* is the full sound and is the default. If notes stutter or drop out on an older phone, choose *Light*: it plays the same instruments with fewer oscillators per note, shorter tails and a shorter reverb, and at most 8 notes at once. If the phone pauses the sound (a call, the lock screen), ETHER VEENA resumes it by itself; if the phone refuses, tap the screen once.

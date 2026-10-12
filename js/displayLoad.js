@@ -77,3 +77,12 @@ export function loadDisplaySettings(storage) {
 }
 export function saveDisplayMode(storage, mode) { try { storage.setItem(MODE_KEY, MODES.includes(mode) ? mode : 'auto'); } catch { /* ignore */ } }
 export function saveLearned(storage, level) { try { storage.setItem(LEARNED_KEY, String(Math.min(2, Math.max(0, level | 0)))); } catch { /* ignore */ } }
+
+// -- Sound engine (Build 033): 'standard' = full quality (default everywhere); 'light' = less CPU, simpler tone — only when the user chooses it ----------------------------
+export const SOUND_KEY = 'etherVeena.soundMode';
+export const SOUND_MODES = ['standard', 'light'];
+export function loadSoundMode(storage) { try { const m = storage.getItem(SOUND_KEY); return SOUND_MODES.includes(m) ? m : 'standard'; } catch { return 'standard'; } }
+export function saveSoundMode(storage, mode) { try { storage.setItem(SOUND_KEY, SOUND_MODES.includes(mode) ? mode : 'standard'); } catch { /* ignore */ } }
+
+/** camera size to ask for: 16:9 either way; a small / slow phone does not need 720p to track hands (the picture is shown small and the polygons are redrawn anyway) */
+export function cameraSizeFor(hint = 0) { return hint >= 1 ? { width: 960, height: 540 } : { width: 1280, height: 720 }; }
