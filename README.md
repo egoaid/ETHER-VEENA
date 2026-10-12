@@ -2,7 +2,7 @@
 
 **A touchless spatial instrument.** Play a Rudra Veena, a harp or a theremin with your hands in the air — all you need is a camera and a browser. No install, no account, no extra hardware.
 
-**▶ Try it: https://egoaid.github.io/ether-veena/**
+**▶ Try it: https://egoaid.github.io/ETHER-VEENA/**
 
 ![ETHER VEENA](icons/og-image.png)
 
@@ -53,3 +53,6 @@ Take a photo of the polygon picture with a self-timer and optional burst of up t
 ## Copyright
 
 © 2026 egoaid. All rights reserved.
+
+## Display performance
+The Display section has a "Display performance" setting (Auto / Full / Lite / Minimal). Auto starts lighter on small phones and lowers the visual load by itself if the picture gets slow.

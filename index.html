@@ -9,14 +9,14 @@
 <meta name="color-scheme" content="dark" />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <meta name="author" content="egoaid" />
-<link rel="canonical" href="https://egoaid.github.io/ether-veena/" />
+<link rel="canonical" href="https://egoaid.github.io/ETHER-VEENA/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ETHER VEENA" />
 <meta property="og:title" content="ETHER VEENA — Touchless Rudra Veena, Harp &amp; Theremin" />
 <meta property="og:description" content="Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install." />
-<meta property="og:url" content="https://egoaid.github.io/ether-veena/" />
-<meta property="og:image" content="https://egoaid.github.io/ether-veena/icons/og-image.png" />
+<meta property="og:url" content="https://egoaid.github.io/ETHER-VEENA/" />
+<meta property="og:image" content="https://egoaid.github.io/ETHER-VEENA/icons/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="ETHER VEENA: a pitch antenna with radio waves and a volume loop, next to the name and 'A touchless spatial instrument'" />
@@ -24,7 +24,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="ETHER VEENA — Touchless Rudra Veena, Harp &amp; Theremin" />
 <meta name="twitter:description" content="Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install." />
-<meta name="twitter:image" content="https://egoaid.github.io/ether-veena/icons/og-image.png" />
+<meta name="twitter:image" content="https://egoaid.github.io/ETHER-VEENA/icons/og-image.png" />
 
 <link rel="manifest" href="./manifest.json" />
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
@@ -45,10 +45,10 @@
  "@graph": [
   {
    "@type": "WebApplication",
-   "@id": "https://egoaid.github.io/ether-veena/#app",
+   "@id": "https://egoaid.github.io/ETHER-VEENA/#app",
    "name": "ETHER VEENA",
    "alternateName": "Ether Veena touchless spatial instrument",
-   "url": "https://egoaid.github.io/ether-veena/",
+   "url": "https://egoaid.github.io/ETHER-VEENA/",
    "description": "Play a Rudra Veena, harp or theremin with your hands in the air. ETHER VEENA is a free touchless spatial instrument that runs in your browser: just a camera, no install.",
    "applicationCategory": "MultimediaApplication",
    "applicationSubCategory": "Musical instrument",
@@ -62,8 +62,8 @@
     "price": "0",
     "priceCurrency": "USD"
    },
-   "image": "https://egoaid.github.io/ether-veena/icons/og-image.png",
-   "screenshot": "https://egoaid.github.io/ether-veena/icons/og-image.png",
+   "image": "https://egoaid.github.io/ETHER-VEENA/icons/og-image.png",
+   "screenshot": "https://egoaid.github.io/ETHER-VEENA/icons/og-image.png",
    "featureList": [
     "Play a Rudra Veena, harp or theremin with hand tracking",
     "Pitch and volume from hand position, no touching",
@@ -85,7 +85,7 @@
   },
   {
    "@type": "FAQPage",
-   "@id": "https://egoaid.github.io/ether-veena/#faq",
+   "@id": "https://egoaid.github.io/ETHER-VEENA/#faq",
    "mainEntity": [
     {
      "@type": "Question",
@@ -207,6 +207,8 @@
         <span class="dot"></span>
         <span id="trackingStatusLabel">camera off</span>
       </div>
+
+      <div class="stage-toast" id="stageToast" role="status" aria-live="polite" hidden></div>
 
       <button type="button" class="stage-fullscreen" id="fullscreenButton" aria-label="Full screen" title="Full screen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -420,9 +422,11 @@
           <label class="toggle"><input type="checkbox" id="showTriggerHudToggle" checked /> Trigger labels</label>
           <label class="toggle"><input type="checkbox" id="showPoseToggle" checked /> Full-body skeleton</label>
           <label class="toggle"><input type="checkbox" id="showDebugToggle" /> Debug numbers</label>
+          <label class="sound-field face-hud-field"><span>Display performance</span><select id="displayPerfSelect"><option value="auto">Auto (recommended)</option><option value="full">Full</option><option value="lite">Lite</option><option value="minimal">Minimal</option></select></label>
+          <p class="panel-hint" id="displayPerfStatus"></p>
           <label class="sound-field face-hud-field"><span>Camera filter</span><select id="cameraFilterSelect"><option value="off">Off</option><option value="facets">Facets</option><option value="crystal">Crystal</option><option value="relief">Relief 3D</option><option value="shards">Shards</option></select></label>
           <label class="sound-field face-hud-field" id="filterDensityField"><span>Polygon density</span><input type="range" id="filterDensity" min="0" max="100" value="50" aria-label="Polygon density: coarse to fine" /></label>
-          <label class="toggle"><input type="checkbox" id="filterSmoothToggle" checked /> Polygon motion smoothing</label>
+          <label class="toggle"><input type="checkbox" id="filterSmoothToggle" checked /> Polygon motion smoothing (Full only)</label>
           <label class="sound-field face-hud-field"><span>Filter color</span><select id="filterColorMode"><option value="original">Original</option><option value="mono">Monochrome</option><option value="duo">Duotone</option></select></label>
           <label class="sound-field face-hud-field" id="filterBaseField" hidden><span>Base color</span><input type="color" id="filterBase" value="#5abeff" /></label>
           <label class="sound-field face-hud-field" id="filterDuoField" hidden><span>Dark → Bright</span><span class="duo-pickers"><input type="color" id="filterDark" value="#080e2e" aria-label="Dark color" /><input type="color" id="filterBright" value="#ffc478" aria-label="Bright color" /></span></label>

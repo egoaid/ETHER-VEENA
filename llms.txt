@@ -5,7 +5,7 @@
 ETHER VEENA is a single-page web app (static files, vanilla JavaScript, Web Audio API, MediaPipe hand and face tracking). It also installs as a PWA and keeps the phone screen awake while playing (Screen Wake Lock API).
 
 ## Use it
-- [ETHER VEENA (the app)](https://egoaid.github.io/ether-veena/): press Start, allow the camera, hold both hands up, press Calibrate.
+- [ETHER VEENA (the app)](https://egoaid.github.io/ETHER-VEENA/): press Start, allow the camera, hold both hands up, press Calibrate.
 
 ## What it does
 - Theremin: right hand left/right = pitch, left hand up/down = volume. Pitch modes: continuous, chromatic, snap to scale, filter scale, easy scale; 30 scales.

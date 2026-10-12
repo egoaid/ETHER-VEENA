@@ -288,3 +288,17 @@ body.shoot-mode .stage.has-crt #video, body.shoot-mode .stage.has-crt .filter-ca
 .shoot-flash.is-on { animation: shoot-flash 0.35s ease-out; }
 @keyframes shoot-flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
 .vector-preview { display: block; width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; background: #0a0908; margin: 4px 0 8px; }
+
+/* ---- Display performance (Build 032): lighter CRT on slow devices -------------------------------------------------- */
+/* Lite: keep the scanlines / vignette (static), drop the blur / contrast filters on three full-size layers and every animation */
+body.perf-lite .stage.has-crt #video, body.perf-lite .stage.has-crt .filter-canvas, body.perf-lite .stage.has-crt .glitch-canvas,
+body.perf-minimal .stage.has-crt #video, body.perf-minimal .stage.has-crt .filter-canvas, body.perf-minimal .stage.has-crt .glitch-canvas { filter: none; }
+body.perf-lite .crt-overlay::before, body.perf-lite .crt-roll, body.perf-minimal .crt-overlay::before, body.perf-minimal .crt-roll { animation: none; }
+body.perf-lite .crt-roll { display: none; }
+/* Minimal: no CRT layers at all */
+body.perf-minimal .stage.has-crt .crt-overlay { display: none; }
+
+/* quiet message on the picture (Build 032) */
+.stage-toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 30; max-width: 88%; padding: 6px 12px; border-radius: 999px; background: rgba(10, 8, 6, 0.78); color: var(--paper, #efe7d8); font: 0.7rem/1.3 var(--font-mono, monospace); letter-spacing: 0.03em; text-align: center; pointer-events: none; }
+.stage-toast[hidden] { display: none; }
+body.shoot-mode .stage-toast { display: none !important; }

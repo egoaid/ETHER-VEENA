@@ -43,7 +43,7 @@ export class UI {
       zoneVolume: $('zoneVolume'),
       zoneVolumeCursor: $('zoneVolumeCursor'),
       privacyToggle: $('privacyToggle'),
-      updateNote: $('updateNote'),
+      updateNote: $('updateNote'), stageToast: $('stageToast'), displayPerfSelect: $('displayPerfSelect'), displayPerfStatus: $('displayPerfStatus'),
       vectorShootButton: $('vectorShootButton'), vectorTimer: $('vectorTimer'), vectorDetail: $('vectorDetail'), vectorStatus: $('vectorStatus'), vectorResult: $('vectorResult'), vectorPreview: $('vectorPreview'), vectorSaveSvg: $('vectorSaveSvg'), vectorSavePdf: $('vectorSavePdf'), vectorSavePng: $('vectorSavePng'), vectorShare: $('vectorShare'), vectorSaveAll: $('vectorSaveAll'), vectorBurst: $('vectorBurst'), vectorStyle: $('vectorStyle'), vectorBg: $('vectorBg'), vectorBgColor: $('vectorBgColor'), vectorBgColorField: $('vectorBgColorField'), vectorPage: $('vectorPage'), vectorShareAs: $('vectorShareAs'), vectorStrip: $('vectorStrip'), filterSmoothToggle: $('filterSmoothToggle'), userPresetButtons: $('userPresetButtons'), userPresetName: $('userPresetName'), userPresetSave: $('userPresetSave'), userPresetDelete: $('userPresetDelete'), userPresetExport: $('userPresetExport'), userPresetImport: $('userPresetImport'), userPresetFile: $('userPresetFile'), userPresetStatus: $('userPresetStatus'), randomLocks: $('randomLocks'), shootCountdown: $('shootCountdown'), shootNumber: $('shootNumber'), shootFlash: $('shootFlash'),
       crtToggle: $('crtToggle'), crtAmount: $('crtAmount'), crtAmountField: $('crtAmountField'), crtOverlay: $('crtOverlay'),
 
@@ -336,6 +336,12 @@ export class UI {
       for (const box of document.querySelectorAll('[data-randomize]')) cats[box.dataset.randomize] = box.checked;
       fn(cats);
     });
+  }
+
+  /** A short, quiet message on the picture (a few seconds). */
+  showToast(text, ms = 6000) {
+    const el = this.el.stageToast; if (!el) return;
+    el.textContent = text; el.hidden = false; clearTimeout(this._toastT); this._toastT = setTimeout(() => { el.hidden = true; }, ms);
   }
 
   setRandomizeStatus(text) {

@@ -25,6 +25,7 @@
    ========================================================================== */
 
 /** id, name, grid, columns, how strongly vertices snap to contours (0..1), relief shading (0..1), colour levels (0 = off) */
+import { qualityOf } from './displayLoad.js';
 export const CAMERA_FILTERS = [
   { id: 'off', name: 'Off' },
   { id: 'facets', name: 'Facets', grid: 'square', cols: 22, snap: 0.55, shade: 0, levels: 0 },
@@ -629,7 +630,7 @@ export class CameraFilter {
     if (renderer !== 'canvas2d') { try { this.gl = new GlFacetRenderer(canvas); } catch { this.gl = null; } }
     if (!this.gl) this._ctx = canvas.getContext('2d');
     this.renderer = this.gl ? 'webgl' : 'canvas2d';
-    this.smooth = true; this._ip = null; this._ipRgb = null; this._shownV = null; this._shownRgb = null; this._fromV = null; this._fromRgb = null; this._toV = null; this._tRebuild = 0; this._interpMs = 60; this._lastE = 1;
+    this.smooth = true; this.quality = 0; this.q = qualityOf(0); this._gradeKey = ''; this._ip = null; this._ipRgb = null; this._shownV = null; this._shownRgb = null; this._fromV = null; this._fromRgb = null; this._toV = null; this._tRebuild = 0; this._interpMs = 60; this._lastE = 1;
     this._state = {}; this._mesh = null; this._rgb = null; this._last = 0; this._lastDraw = 0; this._lastStyleKey = ''; this.minIntervalMs = 80; this.drawSeq = 0; this.stats = { rebuildMs: 0, drawMs: 0, faces: 0, analysisW: 0 };
   }
 
@@ -637,6 +638,11 @@ export class CameraFilter {
     this.id = filterById(id).id; this.filter = filterById(id); this._state = {}; this._mesh = null; this._last = 0;
     this.stage.classList.toggle('has-filter', this.id !== 'off');
     if (this.id === 'off') this._clear();
+  }
+  /** Display performance level (displayLoad.js): 0 full · 1 lite · 2 minimal — caps polygon density, drawing rate and canvas size, and switches smoothing off */
+  setQuality(level) {
+    const l = Math.min(2, Math.max(0, level | 0)); if (l === this.quality) return;
+    this.quality = l; this.q = qualityOf(l); this._state = {}; this._mesh = null; this._last = 0; this._fromV = null; this._lastE = 1; this._gradeKey = '';
   }
   /** Motion smoothing on/off (Display → Polygon motion smoothing) */
   setSmooth(on) { this.smooth = !!on; this._fromV = null; this._lastE = 1; }
@@ -667,8 +673,8 @@ export class CameraFilter {
     const v = this.video; const a = v.videoWidth / v.videoHeight;
     const r = this.stage.getBoundingClientRect();
     const shownW = Math.max(r.width || 640, (r.height || 360) * a); // object-fit: cover
-    const dpr = Math.min(3, window.devicePixelRatio || 1); // Build 028: edges are drawn at the device's real resolution
-    const W = clamp(Math.round(shownW * dpr), 320, this.gl ? 2048 : 1280);
+    const dpr = Math.min(this.q.dprCap, window.devicePixelRatio || 1); // Build 028: edges are drawn at the device's real resolution (capped by the display level)
+    const W = clamp(Math.round(shownW * dpr), 320, Math.min(this.q.maxBacking, this.gl ? 2048 : 1280));
     return [W, Math.round(W / a)];
   }
 
@@ -684,12 +690,13 @@ export class CameraFilter {
     const style = { ...this.style, ...(this.musicMode === 'off' ? {} : this.music.update(music.bands ?? null, { midi: music.midi ?? null, level: music.level ?? 0 }, this.musicMode, dt)) };
     let rebuilt = false;
     // rebuild interval adapts to what a rebuild costs (cheap = more often, ≥ 50 ms; expensive = ≤ 100 ms)
-    const interval = clamp(this.stats.rebuildMs * 8, 50, 100) * (this.governor.tier >= 2 ? 1.25 : 1);
+    const tier = Math.max(this.governor.tier, this.q.floorTier); const smooth = this.smooth && this.q.smooth;
+    const interval = Math.max(this.q.minRebuildMs, clamp(this.stats.rebuildMs * 8, 50, 100) * (tier >= 2 ? 1.25 : 1));
     if (!this._mesh || nowMs - this._last >= interval) {
       const t0 = performance.now();
       this._last = nowMs;
-      const f = resolveFilter(this.filter, this.density, v.videoHeight / v.videoWidth, this.governor.tier);
-      const w = analysisWidthFor(f.cols, this.governor.tier); const h = Math.max(8, Math.round((w * v.videoHeight) / v.videoWidth));
+      const f = resolveFilter(this.filter, Math.min(this.density, this.q.densityCap), v.videoHeight / v.videoWidth, tier);
+      const w = analysisWidthFor(f.cols, tier); const h = Math.max(8, Math.round((w * v.videoHeight) / v.videoWidth));
       if (this._small.width !== w || this._small.height !== h) { this._small.width = w; this._small.height = h; this._state = {}; }
       this._sctx.drawImage(v, 0, 0, w, h);
       const img = this._sctx.getImageData(0, 0, w, h);
@@ -697,7 +704,7 @@ export class CameraFilter {
       this._mesh = buildFacets(img.data, w, h, f, this._state); this._mw = w; this._mh = h;
       this.stats.rebuildMs = performance.now() - t0; this.stats.faces = this._mesh.count; this.stats.analysisW = w;
       // smoothing: glide from what is shown now to the new mesh (only on the same vertex lattice)
-      const same = this.smooth && prevMesh && this._shownV && this._shownV.length === this._mesh.vpos.length && prevMesh.count === this._mesh.count;
+      const same = smooth && prevMesh && this._shownV && this._shownV.length === this._mesh.vpos.length && prevMesh.count === this._mesh.count;
       this._fromV = same ? Float32Array.from(this._shownV) : null; this._fromRgb = same && this._shownRgb && this._shownRgb.length === this._mesh.count * 3 ? Float32Array.from(this._shownRgb) : null;
       this._toV = this._mesh.vpos; this._tRebuild = nowMs; this._interpMs = Math.max(40, Math.min(110, interval));
       rebuilt = true;
@@ -707,10 +714,10 @@ export class CameraFilter {
     const key = `${style.mode}|${style.hueShift.toFixed(0)}|${style.sat.toFixed(2)}|${style.val.toFixed(2)}|${style.contrast.toFixed(2)}|${style.base}|${style.dark}|${style.bright}`;
     this._style = style;
     if (!rebuilt && !moving && key === this._lastStyleKey && nowMs - this._lastDraw < 250) return;
-    if (!rebuilt && nowMs - this._lastDraw < (moving ? 16 : 33)) return; // gliding: every frame (≤ 60 fps); colour-only redraws ≤ 30 fps
+    if (!rebuilt && nowMs - this._lastDraw < (moving ? this.q.moveGapMs : this.q.colorGapMs)) return; // gliding: every frame (≤ 60 fps); colour-only redraws ≤ 30 fps
     const t1 = performance.now();
     const [W, H] = this._backingSize();
-    this._rgb = gradeFaces(this._mesh, style, this._rgb && this._rgb.length === this._mesh.count * 3 ? this._rgb : undefined);
+    if (rebuilt || key !== this._gradeKey || !this._rgb || this._rgb.length !== this._mesh.count * 3) { this._rgb = gradeFaces(this._mesh, style, this._rgb && this._rgb.length === this._mesh.count * 3 ? this._rgb : undefined); this._gradeKey = key; } // colours are only recomputed when the mesh or the colour settings changed (not on every gliding frame)
     // what is drawn: the new mesh, or a blend between the previous shown state and the new one
     let drawMesh = this._mesh; let drawRgb = this._rgb;
     if (e < 1 && this._fromV) {
@@ -719,7 +726,7 @@ export class CameraFilter {
       if (this._fromRgb) { if (!this._ipRgb || this._ipRgb.length !== this._rgb.length) this._ipRgb = new Uint8ClampedArray(this._rgb.length); blendColors(this._fromRgb, this._rgb, e, this._ipRgb); drawRgb = this._ipRgb; }
     }
     // remember what is on screen (vertex positions + colours) so the next rebuild can glide from exactly here
-    if (this.smooth) {
+    if (smooth) {
       if (!this._shownV || this._shownV.length !== this._toV?.length) this._shownV = new Float32Array(this._mesh.vpos.length);
       if (e < 1 && this._fromV) blendColors(this._fromV, this._toV, e, this._shownV); else this._shownV.set(this._mesh.vpos);
       if (!this._shownRgb || this._shownRgb.length !== drawRgb.length) this._shownRgb = new Float32Array(drawRgb.length);

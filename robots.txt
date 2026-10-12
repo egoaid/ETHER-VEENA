@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://egoaid.github.io/ether-veena/sitemap.xml
+Sitemap: https://egoaid.github.io/ETHER-VEENA/sitemap.xml

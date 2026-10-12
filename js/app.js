@@ -47,6 +47,7 @@ import { anchorFor, destinationName, formatDestinationValue, formatTriggerValue 
 import { destinationById } from './mapping.js';
 import { UNIFIED_PRESETS, unifiedPresetById, PRESET_GROUPS } from './presets.js';
 import { WakeLockKeeper } from './wakeLock.js';
+import { LoadWatch, MODES, qualityOf, deviceHint, resolveLevel, loadDisplaySettings, saveDisplayMode, saveLearned } from './displayLoad.js';
 import { APP_VERSION, APP_BUILD } from './appVersion.js';
 import { checkForUpdate, applyUpdate } from './updateCheck.js';
 import { meshToSvg, meshToPdf, visibleRect, drawMeshToCtx, sizeForPng } from './vectorCamera.js';
@@ -191,6 +192,9 @@ class App {
     this.privacy = false; try { this.privacy = localStorage.getItem('etherVeena.privacy') === '1'; } catch { /* storage unavailable */ }
     this._shoot = null; this._vector = { shots: [], sel: 0, urls: [], stamp: '', prepared: null, prepToken: 0 };
     this._store = null; try { this._store = window.localStorage; } catch { /* storage unavailable */ }
+    this.perfSettings = this._store ? loadDisplaySettings(this._store) : { mode: 'auto', learned: 0 };
+    this.loadWatch = new LoadWatch(); this._lastLoopAt = 0;
+    this.displayLevel = resolveLevel(this.perfSettings.mode, { hint: deviceHint(), learned: this.perfSettings.learned });
     this.userPresets = this._store ? loadUserPresets(this._store) : [];
     this.locks = this._store ? loadLocks(this._store) : loadLocks({ getItem() { return null; } });
     this._scopeBuffer = null;
@@ -273,8 +277,16 @@ class App {
     ui.el.cameraFilterSelect.addEventListener('change', () => this._setCameraFilter(ui.el.cameraFilterSelect.value));
     this.glitch = new VideoGlitch({ canvas: ui.el.glitchCanvas, stage: ui.el.stage, video: ui.el.video, filterCanvas: ui.el.filterCanvas, cameraFilter: this.cameraFilter });
     for (const [el, key] of [['glitchAmount', 'amount'], ['glitchFrequency', 'frequency'], ['glitchBlock', 'blockSize'], ['glitchRgb', 'rgbSplit'], ['glitchDisplace', 'displace'], ['glitchNoise', 'noise'], ['glitchHold', 'hold']]) {
-      ui.el[el].addEventListener('input', () => { this.glitch.set({ [key]: Number(ui.el[el].value) / 100 }); ui.el.glitchControls.hidden = !this.glitch.enabled; });
+      ui.el[el].addEventListener('input', () => { this.glitch.set({ [key]: Number(ui.el[el].value) / 100 }); ui.el.glitchControls.hidden = !(this.glitch.params.amount > 0.001); });
     }
+    // Display performance (Build 032): Auto / Full / Lite / Minimal + a watchdog that steps down by itself when the picture starves the sound
+    ui.el.displayPerfSelect.value = this.perfSettings.mode;
+    ui.el.displayPerfSelect.addEventListener('change', () => {
+      const m = MODES.includes(ui.el.displayPerfSelect.value) ? ui.el.displayPerfSelect.value : 'auto';
+      this.perfSettings.mode = m; if (this._store) saveDisplayMode(this._store, m);
+      this.displayLevel = resolveLevel(m, { hint: deviceHint(), learned: this.perfSettings.learned }); this.loadWatch.reset(); this._applyDisplayLevel();
+    });
+    this._applyDisplayLevel();
     ui.el.privacyToggle.checked = this.privacy;
     ui.el.privacyToggle.addEventListener('change', () => { this.privacy = ui.el.privacyToggle.checked; try { localStorage.setItem('etherVeena.privacy', this.privacy ? '1' : '0'); } catch { /* ignore */ } });
     ui.el.vectorShootButton.addEventListener('click', () => this.takeVectorPhoto());
@@ -776,6 +788,26 @@ class App {
     this.perf.setNote?.(p.name);
   }
 
+  /** Apply the current display level to everything that draws (polygon filter, glitch, CRT layers) and say so in the Display section. */
+  _applyDisplayLevel() {
+    const l = this.displayLevel; const q = qualityOf(l);
+    this.cameraFilter.setQuality(l); this.glitch.setSuppressed(!q.glitch);
+    document.body.classList.toggle('perf-lite', l === 1); document.body.classList.toggle('perf-minimal', l === 2);
+    const auto = this.perfSettings.mode === 'auto';
+    const what = ['all effects at their best.', 'coarser polygons, no motion smoothing, no Glitch, a simpler CRT: keeps the sound steady on phones.', 'the lightest picture: very coarse polygons, slow refresh, no CRT layers, no Glitch.'][l];
+    this.ui.el.displayPerfStatus.textContent = `${auto ? 'Auto → ' : ''}${q.name[0].toUpperCase() + q.name.slice(1)}: ${what}${auto && l > 0 ? ' (Choose Full to override.)' : ''}`;
+  }
+
+  /** The watchdog found the picture too expensive: one level lighter, remembered for the next visit. */
+  _stepDisplayDown() {
+    if (this.displayLevel >= 2) return;
+    this.displayLevel += 1; this.perfSettings.learned = Math.max(this.perfSettings.learned, this.displayLevel); if (this._store) saveLearned(this._store, this.perfSettings.learned);
+    this._applyDisplayLevel();
+    const name = qualityOf(this.displayLevel).name[0].toUpperCase() + qualityOf(this.displayLevel).name.slice(1);
+    const msg = `Picture lightened to ${name} to keep the sound smooth`;
+    this.ui.showToast(msg);
+  }
+
   _presetById(id) { return unifiedPresetById(id) ?? this.userPresets.find((q) => q.id === id) ?? null; }
   _renderPresets() { this.ui.renderPresetButtons(UNIFIED_PRESETS, (id) => this.applyUnifiedPreset(id), PRESET_GROUPS, this.userPresets); this.ui.setActivePreset(this._activePresetId); }
 
@@ -1195,6 +1227,7 @@ class App {
     const loop = () => {
       if (!this.isLive) return;
       const nowMs = performance.now();
+      const workStart = performance.now();
       if (this.cameraFilter.id !== 'off') {
         // the existing audio analysis (AudioBands) and the pitch already shown in the readout drive the colour — no second analysis
         const f = this._displayFreq ?? this.theremin.getFrequencyHz();
@@ -1202,6 +1235,11 @@ class App {
       }
 
       this.glitch.update(nowMs); // after the polygon filter, before anything is drawn above it
+      if (this.perfSettings.mode === 'auto' && this.displayLevel < 2 && (this.cameraFilter.id !== 'off' || this.glitch.enabled)) {
+        // the watchdog: what the picture cost this frame, and how long frames take overall
+        if (this.loadWatch.sample(this._lastLoopAt ? nowMs - this._lastLoopAt : 0, performance.now() - workStart) === 'down') this._stepDisplayDown();
+      }
+      this._lastLoopAt = nowMs;
 
       const result = this.handTracker.detect(this.ui.el.video);
       if (result) {

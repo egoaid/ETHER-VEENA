@@ -137,7 +137,9 @@ export class VideoGlitch {
     this._seq = -1; this._paintSeq = -1; this._haveBase = false; this._visible = false; this.stats = { drawMs: 0, bursts: 0 };
   }
   set(partial) { Object.assign(this.params, partial); if (!(this.params.amount > 0.001)) this._hide(); }
-  get enabled() { return this.params.amount > 0.001; }
+  /** Build 032: the display level (displayLoad.js) can switch the glitch off on a slow device without touching the user's settings */
+  setSuppressed(on) { this.suppressed = !!on; if (this.suppressed) this._hide(); }
+  get enabled() { return this.params.amount > 0.001 && !this.suppressed; }
   _hide() { if (this._visible) { this._visible = false; this.stage.classList.remove('has-glitch'); } this._paintSeq = -1; }
 
   _captureBase(src, sw, sh) {
